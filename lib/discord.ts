@@ -1,3 +1,71 @@
+import type { GeneratedAd, DiscordChannel } from "./adgen/types";
+
+const CHANNEL_WEBHOOK_ENV: Record<DiscordChannel, string> = {
+  "ad-content": "DISCORD_WEBHOOK_AD_CONTENT",
+  "junk-removal-ads": "DISCORD_WEBHOOK_JUNK_REMOVAL",
+  "landscaping-ads": "DISCORD_WEBHOOK_LANDSCAPING",
+  "seasonal-promos": "DISCORD_WEBHOOK_SEASONAL",
+};
+
+const AD_COLORS: Record<DiscordChannel, number> = {
+  "ad-content": 0x9b59b6,
+  "junk-removal-ads": 0xe67e22,
+  "landscaping-ads": 0x2ecc71,
+  "seasonal-promos": 0xe74c3c,
+};
+
+function resolveWebhook(channel: DiscordChannel): string | undefined {
+  const specific = process.env[CHANNEL_WEBHOOK_ENV[channel]];
+  if (specific) return specific;
+  // Fall back to the general webhook
+  return process.env.DISCORD_WEBHOOK_URL;
+}
+
+export async function sendAdToDiscord(ad: GeneratedAd): Promise<void> {
+  const webhookUrl = resolveWebhook(ad.channel);
+  if (!webhookUrl) {
+    console.warn(
+      `[ad-gen] No webhook configured for channel #${ad.channel} — skipping`
+    );
+    return;
+  }
+
+  const serviceLabels: Record<string, string> = {
+    "junk-removal": "Junk Removal",
+    landscaping: "Landscaping",
+    "seasonal-cleanup": "Seasonal Cleanup",
+    "yard-cleanup": "Yard Cleanup",
+    "leaf-removal": "Leaf Removal",
+  };
+
+  const embed = {
+    title: `Generated Ad — ${serviceLabels[ad.service] ?? ad.service}`,
+    description: ad.fullText,
+    color: AD_COLORS[ad.channel],
+    fields: [
+      { name: "Format", value: ad.format, inline: true },
+      { name: "Tone", value: ad.tone, inline: true },
+      { name: "Service", value: ad.service, inline: true },
+    ],
+    footer: { text: `Ad ID: ${ad.id} · Post to social manually` },
+    timestamp: ad.generatedAt,
+  };
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ embeds: [embed] }),
+  });
+
+  if (!res.ok) {
+    console.error(
+      `[ad-gen] Discord webhook failed for #${ad.channel}:`,
+      res.status,
+      await res.text()
+    );
+  }
+}
+
 export interface LeadNotification {
   id: string;
   service: string;
