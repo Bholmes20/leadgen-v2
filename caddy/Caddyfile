@@ -1,0 +1,43 @@
+# LeadGen V2 — Caddy reverse proxy
+#
+# TLS: Cloudflare Origin Certificate (Full strict mode in Cloudflare)
+#   Generate at: Cloudflare Dashboard → SSL/TLS → Origin Server → Create Certificate
+#   Validity: 15 years, hostnames: yourdomain.com, *.yourdomain.com
+#   Save cert to: /etc/caddy/tls/cf-cert.pem
+#   Save key to:  /etc/caddy/tls/cf-key.pem
+#
+# Replace YOUR_DOMAIN below with your actual domain before starting Caddy.
+
+{
+  # Disable Caddy's auto-HTTPS — we use a Cloudflare Origin Certificate
+  auto_https off
+
+  # Disable Caddy's admin API — no need for it on this server
+  admin off
+}
+
+# ── HTTPS ──────────────────────────────────────────────────────────────────
+https://YOUR_DOMAIN {
+  tls /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
+
+  # Restore real visitor IP from Cloudflare's header (CF-Connecting-IP)
+  # so Next.js request logs show actual clients, not Cloudflare IPs
+  header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+  header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+
+  # Block admin dashboard — never accessible from the public internet
+  @admin path /admin /admin/*
+  respond @admin 403
+
+  # Block ad generation endpoint — cron jobs call :3002 directly, not through Caddy
+  @cron path /api/generate-ads
+  respond @cron 403
+
+  # Route all public traffic to Next.js (localhost-only bind)
+  reverse_proxy 127.0.0.1:3002
+}
+
+# ── HTTP → HTTPS redirect ──────────────────────────────────────────────────
+http://YOUR_DOMAIN {
+  redir https://{host}{uri} permanent
+}
