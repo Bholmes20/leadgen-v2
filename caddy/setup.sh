@@ -81,7 +81,7 @@ cat <<'INSTRUCTIONS'
     2. Click "Create Certificate"
     3. Let Cloudflare generate the key pair
     4. Validity: 15 years
-    5. Hostnames: yourdomain.com, *.yourdomain.com
+    5. Hostnames: leads.eseeeent.com  (or eseeeent.com + *.eseeeent.com for wildcard)
 
   Step B — Install the certificate:
     sudo nano /etc/caddy/tls/cf-cert.pem   ← paste the CERTIFICATE
@@ -89,21 +89,17 @@ cat <<'INSTRUCTIONS'
     sudo chown caddy:caddy /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
     sudo chmod 640 /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
 
-  Step C — Set your domain in /etc/caddy/Caddyfile:
-    sudo nano /etc/caddy/Caddyfile
-    Replace YOUR_DOMAIN with your actual domain (e.g. leads.yourdomain.com)
-
-  Step D — Start Caddy:
+  Step C — Start Caddy:
     sudo systemctl start caddy
     sudo systemctl status caddy
     sudo journalctl -u caddy -f
 
-  Step E — Cloudflare settings:
-    DNS:     A record → your public IP, Proxy enabled (orange cloud)
+  Step D — Cloudflare settings:
+    DNS:     A record for leads.eseeeent.com → your public IP, Proxy on (orange cloud)
     SSL/TLS: Full (strict)
     Always Use HTTPS: On
 
-  Step F — Router port forwarding:
+  Step E — Router port forwarding:
     Forward TCP 80  → 192.168.1.226
     Forward TCP 443 → 192.168.1.226
     Do NOT forward port 22 or 3002.

@@ -2,11 +2,9 @@
 #
 # TLS: Cloudflare Origin Certificate (Full strict mode in Cloudflare)
 #   Generate at: Cloudflare Dashboard → SSL/TLS → Origin Server → Create Certificate
-#   Validity: 15 years, hostnames: yourdomain.com, *.yourdomain.com
+#   Validity: 15 years, hostnames: leads.eseeeent.com (or *.eseeeent.com)
 #   Save cert to: /etc/caddy/tls/cf-cert.pem
 #   Save key to:  /etc/caddy/tls/cf-key.pem
-#
-# Replace YOUR_DOMAIN below with your actual domain before starting Caddy.
 
 {
   # Disable Caddy's auto-HTTPS — we use a Cloudflare Origin Certificate
@@ -17,7 +15,7 @@
 }
 
 # ── HTTPS ──────────────────────────────────────────────────────────────────
-https://YOUR_DOMAIN {
+https://leads.eseeeent.com {
   tls /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
 
   # Restore real visitor IP from Cloudflare's header (CF-Connecting-IP)
@@ -38,6 +36,6 @@ https://YOUR_DOMAIN {
 }
 
 # ── HTTP → HTTPS redirect ──────────────────────────────────────────────────
-http://YOUR_DOMAIN {
+http://leads.eseeeent.com {
   redir https://{host}{uri} permanent
 }
