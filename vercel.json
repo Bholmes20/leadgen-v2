@@ -1,0 +1,7 @@
+{
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/leads/route.ts": { "maxDuration": 30 },
+    "app/api/generate-ads/route.ts": { "maxDuration": 30 }
+  }
+}
