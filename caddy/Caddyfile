@@ -10,7 +10,7 @@
 	admin off
 }
 
-leads.eseeeent.com {
+leads.eseeent.com {
 	tls /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
 
 	# Block admin dashboard — never reachable from the public internet
