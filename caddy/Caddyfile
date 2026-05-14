@@ -1,39 +1,28 @@
 # LeadGen V2 — Caddy reverse proxy
 #
-# TLS: Cloudflare Origin Certificate (Full strict mode in Cloudflare)
-#   Generate at: Cloudflare Dashboard → SSL/TLS → Origin Server → Create Certificate
-#   Validity: 15 years, hostnames: leads.eseeeent.com (or *.eseeeent.com)
-#   Save cert to: /etc/caddy/tls/cf-cert.pem
-#   Save key to:  /etc/caddy/tls/cf-key.pem
+# TLS: Cloudflare Origin Certificate (Cloudflare SSL mode: Full strict)
+#   Cert: /etc/caddy/tls/cf-cert.pem
+#   Key:  /etc/caddy/tls/cf-key.pem
+#
+# Caddy automatically redirects HTTP → HTTPS when tls is configured.
+# Do NOT set Cloudflare SSL to "Flexible" — it must be Full or Full strict.
 {
-	# Disable Caddy's auto-HTTPS — we use a Cloudflare Origin Certificate
-	auto_https off
-
-	# Disable Caddy's admin API — no need for it on this server
 	admin off
 }
 
-# ── HTTPS ──────────────────────────────────────────────────────────────────
-https://leads.eseeeent.com {
+leads.eseeeent.com {
 	tls /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
 
-	# Block admin dashboard — never accessible from the public internet
+	# Block admin dashboard — never reachable from the public internet
 	@admin path /admin /admin/*
 	respond @admin 403
 
-	# Block ad generation endpoint — cron jobs call :3002 directly, not through Caddy
+	# Block ad generation endpoint — cron jobs call :3002 directly
 	@cron path /api/generate-ads
 	respond @cron 403
 
-	# Route all public traffic to Next.js (localhost-only bind)
-	# header_up is a reverse_proxy subdirective — must live inside this block
 	reverse_proxy 127.0.0.1:3002 {
 		header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
 		header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 	}
-}
-
-# ── HTTP → HTTPS redirect ──────────────────────────────────────────────────
-http://leads.eseeeent.com {
-	redir https://{host}{uri} permanent
 }
