@@ -15,7 +15,8 @@
  *   FB_SITE_URL             — appended to every post (e.g. https://leads.eseeeent.com)
  */
 
-import { getEligiblePosts, markPosted, markFailed, rejectPost } from "../lib/adgen/queue";
+import { getEligiblePosts, markPosted, markFailed, rejectPost, countRecentFailures } from "../lib/adgen/queue";
+import { sendSystemAlert } from "../lib/discord";
 
 const PAGE_ID = process.env.FB_PAGE_ID;
 const PAGE_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
@@ -78,7 +79,18 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+const FAILURE_WINDOW_HOURS = 72;
+const FAILURE_PAUSE_THRESHOLD = 3;
+
 async function run(): Promise<void> {
+  const recentFailures = countRecentFailures(FAILURE_WINDOW_HOURS);
+  if (recentFailures >= FAILURE_PAUSE_THRESHOLD) {
+    const msg = `${recentFailures} post failures in the last ${FAILURE_WINDOW_HOURS}h. Posting paused — check token and logs.`;
+    console.error(`[fb-poster] ${msg}`);
+    await sendSystemAlert("Facebook Posting Paused", msg, true);
+    return;
+  }
+
   const posts = getEligiblePosts(DELAY_HOURS);
 
   if (posts.length === 0) {
@@ -101,9 +113,13 @@ async function run(): Promise<void> {
       const msg = err instanceof Error ? err.message : String(err);
       markFailed(post.id, msg);
       console.error(`[fb-poster] Failed: ${msg}`);
+      await sendSystemAlert(
+        "Facebook Post Failed",
+        `Post \`${post.id}\` (${post.service} / ${post.tone}) failed:\n\`\`\`${msg}\`\`\``,
+        true
+      );
     }
 
-    // Random 45–90s delay between posts if there are multiple
     if (i < posts.length - 1) {
       const delay = 45_000 + Math.random() * 45_000;
       console.log(`[fb-poster] Waiting ${Math.round(delay / 1000)}s before next post...`);
@@ -112,7 +128,9 @@ async function run(): Promise<void> {
   }
 }
 
-run().catch((err) => {
-  console.error("[fb-poster] Fatal:", err);
+run().catch(async (err) => {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error("[fb-poster] Fatal:", msg);
+  await sendSystemAlert("Facebook Poster Fatal Error", msg, true).catch(() => {});
   process.exit(1);
 });

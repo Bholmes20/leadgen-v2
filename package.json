@@ -8,7 +8,8 @@
     "start": "next start --port 3002 --hostname 127.0.0.1",
     "lint": "eslint",
     "fb:post": "tsx --env-file=.env.local scripts/post-to-facebook.ts",
-    "fb:reject": "tsx --env-file=.env.local scripts/post-to-facebook.ts reject"
+    "fb:reject": "tsx --env-file=.env.local scripts/post-to-facebook.ts reject",
+    "fb:health": "tsx --env-file=.env.local scripts/check-token-health.ts"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",

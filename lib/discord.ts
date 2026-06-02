@@ -66,6 +66,32 @@ export async function sendAdToDiscord(ad: GeneratedAd): Promise<void> {
   }
 }
 
+export async function sendSystemAlert(
+  title: string,
+  description: string,
+  isError = false
+): Promise<void> {
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  const embed = {
+    title,
+    description,
+    color: isError ? 0xe74c3c : 0xe67e22,
+    timestamp: new Date().toISOString(),
+  };
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ embeds: [embed] }),
+  });
+
+  if (!res.ok) {
+    console.error("[system-alert] Discord webhook failed:", res.status);
+  }
+}
+
 export interface LeadNotification {
   id: string;
   service: string;
