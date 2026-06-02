@@ -1,5 +1,6 @@
 import { generateBatch } from "./generator";
 import { sendAdToDiscord } from "../discord";
+import { enqueueAd } from "./queue";
 import type { Service, AdFormat, Tone } from "./types";
 
 export interface GenerateOptions {
@@ -31,5 +32,12 @@ export async function generateAndSendAds(
     console.log(
       `[ad-gen] Sent: ${ad.service} / ${ad.format} / ${ad.tone} → #${ad.channel}`
     );
+
+    if (ad.format === "facebook") {
+      const queued = enqueueAd(ad);
+      if (queued) {
+        console.log(`[ad-gen] Queued for Facebook: ${ad.id}`);
+      }
+    }
   }
 }

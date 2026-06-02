@@ -6,7 +6,9 @@
     "dev": "next dev --port 3002",
     "build": "next build",
     "start": "next start --port 3002 --hostname 127.0.0.1",
-    "lint": "eslint"
+    "lint": "eslint",
+    "fb:post": "tsx --env-file=.env.local scripts/post-to-facebook.ts",
+    "fb:reject": "tsx --env-file=.env.local scripts/post-to-facebook.ts reject"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",
@@ -25,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "^4.22.3",
     "typescript": "^5"
   }
 }

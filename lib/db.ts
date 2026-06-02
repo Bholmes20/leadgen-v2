@@ -24,6 +24,24 @@ db.exec(`
     estimate_high INTEGER,
     status TEXT NOT NULL DEFAULT 'new'
   );
+
+  CREATE TABLE IF NOT EXISTS pending_posts (
+    id TEXT PRIMARY KEY,
+    service TEXT NOT NULL,
+    format TEXT NOT NULL,
+    tone TEXT NOT NULL,
+    headline TEXT NOT NULL,
+    body TEXT NOT NULL,
+    cta TEXT NOT NULL,
+    full_text TEXT NOT NULL,
+    content_hash TEXT NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    approved_at TEXT,
+    posted_at TEXT,
+    fb_post_id TEXT,
+    error TEXT
+  );
 `);
 
 export default db;
