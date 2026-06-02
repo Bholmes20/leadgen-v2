@@ -10,7 +10,8 @@
     "fb:post": "tsx --env-file=.env.local scripts/post-to-facebook.ts",
     "fb:reject": "tsx --env-file=.env.local scripts/post-to-facebook.ts reject",
     "fb:health": "tsx --env-file=.env.local scripts/check-token-health.ts",
-    "fb:drain": "tsx --env-file=.env.local scripts/fb-drain.ts"
+    "fb:drain": "tsx --env-file=.env.local scripts/fb-drain.ts",
+    "db:backup": "bash scripts/backup-db.sh"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",

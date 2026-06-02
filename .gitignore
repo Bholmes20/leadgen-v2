@@ -44,5 +44,6 @@ next-env.d.ts
 data/
 public/uploads/
 logs/
+backups/
 caddy/*.pem
 caddy/*.key
