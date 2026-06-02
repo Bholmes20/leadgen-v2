@@ -68,6 +68,13 @@ export function markFailed(id: string, error: string): void {
   ).run(error, id);
 }
 
+export function countPendingPosts(): number {
+  const row = db
+    .prepare(`SELECT COUNT(*) as count FROM pending_posts WHERE status = 'pending'`)
+    .get() as { count: number };
+  return row.count;
+}
+
 export function countRecentFailures(hours: number): number {
   const row = db
     .prepare(
