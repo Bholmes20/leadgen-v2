@@ -86,6 +86,13 @@ export function countRecentFailures(hours: number): number {
   return row.count;
 }
 
+export function drainPendingPosts(): number {
+  const result = db
+    .prepare(`UPDATE pending_posts SET status = 'rejected' WHERE status = 'pending'`)
+    .run();
+  return result.changes;
+}
+
 export function rejectPost(id: string): void {
   db.prepare(
     `UPDATE pending_posts SET status = 'rejected' WHERE id = ? AND status = 'pending'`
