@@ -25,19 +25,21 @@ export async function generateAndSendAds(
     tone: opts.tone,
   });
 
-  console.log(`[ad-gen] Generated ${ads.length} ad(s) — sending to Discord`);
+  console.log(`[ad-gen] Generated ${ads.length} ad(s)`);
 
   for (const ad of ads) {
-    await sendAdToDiscord(ad);
-    console.log(
-      `[ad-gen] Sent: ${ad.service} / ${ad.format} / ${ad.tone} → #${ad.channel}`
-    );
-
     if (ad.format === "facebook") {
       const queued = enqueueAd(ad);
-      if (queued) {
-        console.log(`[ad-gen] Queued for Facebook: ${ad.id}`);
-      }
+      console.log(
+        queued
+          ? `[ad-gen] Queued for Facebook: ${ad.id} (${ad.service} / ${ad.tone})`
+          : `[ad-gen] Duplicate skipped: ${ad.id}`
+      );
+    } else {
+      await sendAdToDiscord(ad);
+      console.log(
+        `[ad-gen] Sent to Discord: ${ad.service} / ${ad.format} / ${ad.tone} → #${ad.channel}`
+      );
     }
   }
 }
