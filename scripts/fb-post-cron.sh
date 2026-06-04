@@ -52,6 +52,9 @@ fi
 
 # ── Step 2: post to Facebook ──────────────────────────────────────────────────
 
+# Must cd so that process.cwd() resolves DB and other relative paths correctly.
+cd "$PROJECT_DIR"
+
 log "Running post-to-facebook..."
 "$TSX" --env-file="$ENV_FILE" "$PROJECT_DIR/scripts/post-to-facebook.ts"
 log "Done."
