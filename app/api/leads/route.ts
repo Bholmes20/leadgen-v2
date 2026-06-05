@@ -5,6 +5,7 @@ import fs from "fs";
 import db from "@/lib/db";
 import { generateEstimate, Service } from "@/lib/estimate";
 import { sendDiscordAlert } from "@/lib/discord";
+import { sendLeadConfirmation } from "@/lib/email";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')
     `).run(id, service, name, email, phone, address, details, JSON.stringify(photos), estimate.low, estimate.high);
 
-    // Send Discord alert (non-blocking — don't fail the request if Discord is down)
+    // Non-blocking side effects — neither can fail the lead submission
     sendDiscordAlert({
       id,
       service,
@@ -63,6 +64,9 @@ export async function POST(req: NextRequest) {
       estimateLow: estimate.low,
       estimateHigh: estimate.high,
     }).catch((err) => console.error("Discord alert failed:", err));
+
+    sendLeadConfirmation({ name, email, service, address })
+      .catch((err) => console.error("Confirmation email failed:", err));
 
     return NextResponse.json({ success: true, id });
   } catch (err) {
