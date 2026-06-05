@@ -52,7 +52,14 @@ export async function generateAndSendAds(
         try {
           imagePath = await renderGraphic(ad.service, ad.graphicCopy, ad.id);
         } catch (err) {
-          console.warn(`[ad-gen] Graphic render failed — queuing text-only: ${err}`);
+          const msg = err instanceof Error ? err.message : String(err);
+          const stack = err instanceof Error && err.stack ? `\n${err.stack}` : "";
+          console.error(`[ad-gen] Graphic render failed for ${ad.id} (${ad.service}/${ad.tone}) — queuing text-only: ${msg}${stack}`);
+          await sendSystemAlert(
+            "Facebook Graphic Render Failed",
+            `Post \`${ad.id}\` (${ad.service} / ${ad.tone}) failed to render graphic — queued text-only:\n\`\`\`${msg}\`\`\``,
+            false
+          ).catch(() => {});
         }
       }
 
