@@ -1,4 +1,4 @@
-import type { Service, AdFormat, Tone } from "./types";
+import type { Service, AdFormat, Tone, GraphicCopy } from "./types";
 
 export const LOCATIONS = [
   "Augusta",
@@ -299,3 +299,40 @@ export const SOCIAL_PROOF = [
   "5-star rated by your neighbors.",
   "Family-owned business serving the CSRA.",
 ];
+
+// Short location lines for graphic overlays — bullet-separated city names
+export const GRAPHIC_LOCATION_LINES = [
+  "AUGUSTA • EVANS • GROVETOWN • AIKEN",
+  "AUGUSTA • MARTINEZ • NORTH AUGUSTA",
+  "EVANS • GROVETOWN • COLUMBIA COUNTY",
+  "AUGUSTA • COLUMBIA COUNTY • AIKEN",
+];
+
+// Short, punchy copy for social media graphics — hook uses \n for line break
+export const GRAPHIC_COPY: Record<Service, GraphicCopy[]> = {
+  "junk-removal": [
+    { hook: "GARAGE\nTOO FULL?", valueProp: "WE'LL HAUL IT AWAY", ctaBadge: "FREE QUOTES" },
+    { hook: "JUNK\nPILING UP?", valueProp: "WE CLEAR IT FAST", ctaBadge: "SAME DAY AVAILABLE" },
+    { hook: "ESTATE\nCLEANOUT?", valueProp: "WE HANDLE IT ALL", ctaBadge: "FREE ESTIMATES" },
+    { hook: "MOVING\nOUT?", valueProp: "WE HAUL ANYTHING", ctaBadge: "SAME DAY SERVICE" },
+    { hook: "FULL\nHOUSE?", valueProp: "ONE CALL CLEARS IT", ctaBadge: "FREE QUOTES" },
+  ],
+  landscaping: [
+    { hook: "OVERGROWN\nYARD?", valueProp: "GET YOUR WEEKENDS BACK", ctaBadge: "FREE ESTIMATES" },
+    { hook: "LAWN\nLOOKS ROUGH?", valueProp: "WE FIX THAT FAST", ctaBadge: "FREE QUOTES" },
+    { hook: "TIRED OF\nMOWING?", valueProp: "WE'VE GOT YOU COVERED", ctaBadge: "FREE ESTIMATES" },
+    { hook: "YARD OUT\nOF HAND?", valueProp: "WE MAKE IT SHARP", ctaBadge: "FREE QUOTES" },
+  ],
+  "seasonal-cleanup": [
+    { hook: "YARD\nA MESS?", valueProp: "ONE VISIT FIXES IT", ctaBadge: "FREE ESTIMATES" },
+    { hook: "END OF\nSEASON?", valueProp: "WE'LL CLEAN IT UP", ctaBadge: "FREE QUOTES" },
+  ],
+  "yard-cleanup": [
+    { hook: "YARD\nOVERGROWN?", valueProp: "WE CLEAR IT OUT", ctaBadge: "FREE QUOTES" },
+    { hook: "PROPERTY\nA MESS?", valueProp: "TRANSFORMED IN A DAY", ctaBadge: "FREE ESTIMATES" },
+  ],
+  "leaf-removal": [
+    { hook: "LEAVES\nPILING UP?", valueProp: "WE'LL CLEAR THEM FAST", ctaBadge: "FREE QUOTES" },
+    { hook: "DONE\nRAKING?", valueProp: "WE'LL DO IT FOR YOU", ctaBadge: "SAME DAY AVAILABLE" },
+  ],
+};

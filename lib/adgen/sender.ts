@@ -1,6 +1,7 @@
 import { generateBatch } from "./generator";
 import { sendAdToDiscord, sendSystemAlert } from "../discord";
 import { enqueueAd, countPendingPosts } from "./queue";
+import { renderGraphic } from "../graphics/renderer";
 import type { Service, AdFormat, Tone } from "./types";
 
 const FB_QUEUE_DEPTH_LIMIT = 3;
@@ -46,10 +47,19 @@ export async function generateAndSendAds(
         }
         continue;
       }
-      const queued = enqueueAd(ad);
+      let imagePath: string | undefined;
+      if (ad.graphicCopy) {
+        try {
+          imagePath = await renderGraphic(ad.service, ad.graphicCopy, ad.id);
+        } catch (err) {
+          console.warn(`[ad-gen] Graphic render failed — queuing text-only: ${err}`);
+        }
+      }
+
+      const queued = enqueueAd(ad, imagePath);
       console.log(
         queued
-          ? `[ad-gen] Queued for Facebook: ${ad.id} (${ad.service} / ${ad.tone})`
+          ? `[ad-gen] Queued for Facebook: ${ad.id} (${ad.service} / ${ad.tone})${imagePath ? " + graphic" : ""}`
           : `[ad-gen] Duplicate skipped: ${ad.id}`
       );
     } else {

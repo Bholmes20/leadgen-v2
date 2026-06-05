@@ -44,4 +44,12 @@ db.exec(`
   );
 `);
 
+// Idempotent column addition — SQLite has no IF NOT EXISTS on ALTER TABLE
+const existingCols = (
+  db.prepare("PRAGMA table_info(pending_posts)").all() as Array<{ name: string }>
+).map((r) => r.name);
+if (!existingCols.includes("image_path")) {
+  db.exec("ALTER TABLE pending_posts ADD COLUMN image_path TEXT");
+}
+
 export default db;

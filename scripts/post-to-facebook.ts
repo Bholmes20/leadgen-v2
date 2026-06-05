@@ -15,6 +15,7 @@
  *   FB_SITE_URL             — appended to every post (e.g. https://leads.eseeeent.com)
  */
 
+import fs from "fs";
 import { getEligiblePosts, markPosted, markFailed, rejectPost, countRecentFailures } from "../lib/adgen/queue";
 import { sendSystemAlert } from "../lib/discord";
 
@@ -56,7 +57,7 @@ function buildMessage(post: {
   return parts.join("\n\n");
 }
 
-async function postToPage(message: string): Promise<string> {
+async function postTextToPage(message: string): Promise<string> {
   const res = await fetch(
     `https://graph.facebook.com/v19.0/${PAGE_ID}/feed`,
     {
@@ -68,11 +69,33 @@ async function postToPage(message: string): Promise<string> {
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Graph API ${res.status}: ${body}`);
+    throw new Error(`Graph API (feed) ${res.status}: ${body}`);
   }
 
   const data = (await res.json()) as { id: string };
   return data.id;
+}
+
+async function postPhotoToPage(imagePath: string, message: string): Promise<string> {
+  const fileBuffer = fs.readFileSync(imagePath);
+  const form = new FormData();
+  form.append("source", new Blob([fileBuffer], { type: "image/png" }), "graphic.png");
+  form.append("message", message);
+  form.append("access_token", PAGE_TOKEN!);
+
+  const res = await fetch(
+    `https://graph.facebook.com/v19.0/${PAGE_ID}/photos`,
+    { method: "POST", body: form }
+  );
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Graph API (photos) ${res.status}: ${body}`);
+  }
+
+  const data = (await res.json()) as { id: string; post_id?: string };
+  // post_id is the feed post ID; id is the raw photo object ID
+  return data.post_id ?? data.id;
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -106,9 +129,12 @@ async function run(): Promise<void> {
 
     try {
       const message = buildMessage(post);
-      const fbId = await postToPage(message);
+      const hasImage = !!post.image_path && fs.existsSync(post.image_path);
+      const fbId = hasImage
+        ? await postPhotoToPage(post.image_path!, message)
+        : await postTextToPage(message);
       markPosted(post.id, fbId);
-      console.log(`[fb-poster] Posted — FB id: ${fbId}`);
+      console.log(`[fb-poster] Posted — FB id: ${fbId} ${hasImage ? "(with graphic)" : "(text only)"}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       markFailed(post.id, msg);

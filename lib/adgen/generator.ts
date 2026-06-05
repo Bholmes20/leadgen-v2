@@ -7,7 +7,10 @@ import {
   LOCATIONS,
   URGENCY_PHRASES,
   SOCIAL_PROOF,
+  GRAPHIC_COPY,
+  GRAPHIC_LOCATION_LINES,
 } from "./content";
+import type { GraphicCopy } from "./types";
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -103,6 +106,9 @@ export function generateAd(options?: {
   const cta = pick(CTAS[tone]);
   const channel = SERVICE_CHANNEL[service];
 
+  const graphicCopy: GraphicCopy | undefined =
+    format === "facebook" ? pick(GRAPHIC_COPY[service]) : undefined;
+
   const partial: Omit<GeneratedAd, "fullText"> = {
     id: uuidv4(),
     service,
@@ -113,6 +119,7 @@ export function generateAd(options?: {
     cta,
     channel,
     generatedAt: new Date().toISOString(),
+    graphicCopy,
   };
 
   return { ...partial, fullText: assembleFullText(partial) };

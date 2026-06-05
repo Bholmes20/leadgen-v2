@@ -26,6 +26,12 @@ export type DiscordChannel =
   | "landscaping-ads"
   | "seasonal-promos";
 
+export interface GraphicCopy {
+  hook: string;
+  valueProp: string;
+  ctaBadge: string;
+}
+
 export interface GeneratedAd {
   id: string;
   service: Service;
@@ -37,4 +43,5 @@ export interface GeneratedAd {
   fullText: string;
   channel: DiscordChannel;
   generatedAt: string;
+  graphicCopy?: GraphicCopy;
 }

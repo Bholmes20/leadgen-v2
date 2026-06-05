@@ -18,9 +18,10 @@ interface PendingPost {
   posted_at: string | null;
   fb_post_id: string | null;
   error: string | null;
+  image_path: string | null;
 }
 
-export function enqueueAd(ad: GeneratedAd): boolean {
+export function enqueueAd(ad: GeneratedAd, imagePath?: string): boolean {
   const hash = createHash("sha256")
     .update(ad.headline + "\0" + ad.body + "\0" + ad.cta)
     .digest("hex");
@@ -35,9 +36,9 @@ export function enqueueAd(ad: GeneratedAd): boolean {
   }
 
   db.prepare(
-    `INSERT INTO pending_posts (id, service, format, tone, headline, body, cta, full_text, content_hash)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(ad.id, ad.service, ad.format, ad.tone, ad.headline, ad.body, ad.cta, ad.fullText, hash);
+    `INSERT INTO pending_posts (id, service, format, tone, headline, body, cta, full_text, content_hash, image_path)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(ad.id, ad.service, ad.format, ad.tone, ad.headline, ad.body, ad.cta, ad.fullText, hash, imagePath ?? null);
 
   return true;
 }
