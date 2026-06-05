@@ -3,11 +3,12 @@
 import { useTransition } from 'react'
 import { updateLeadStatus } from './actions'
 
-const STATUSES = ['NEW', 'REVIEWED', 'SENT', 'QUOTED', 'BOOKED', 'COMPLETED', 'LOST']
+const STATUSES = ['NEW', 'REVIEWED', 'ROUTED', 'SENT', 'QUOTED', 'BOOKED', 'COMPLETED', 'LOST']
 
 const COLOR: Record<string, string> = {
   NEW: 'bg-blue-100 text-blue-800',
   REVIEWED: 'bg-yellow-100 text-yellow-800',
+  ROUTED: 'bg-indigo-100 text-indigo-800',
   SENT: 'bg-orange-100 text-orange-800',
   QUOTED: 'bg-purple-100 text-purple-800',
   BOOKED: 'bg-green-100 text-green-800',

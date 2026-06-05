@@ -79,7 +79,9 @@ export default function AdminLeadsPage() {
                           {fmt(lead.created_at)}
                         </td>
                         <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-                          {lead.name}
+                          <a href={`/admin/leads/${lead.id}`} className="hover:underline hover:text-gray-600">
+                            {lead.name}
+                          </a>
                         </td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                           {serviceLabel(lead.service)}
