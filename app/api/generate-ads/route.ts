@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let count = 3;
+  let count = 1;
   let service: Service | undefined;
   let format: AdFormat | undefined;
   let tone: Tone | undefined;

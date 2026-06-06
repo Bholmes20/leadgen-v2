@@ -22,6 +22,25 @@ interface PendingPost {
 }
 
 export function enqueueAd(ad: GeneratedAd, imagePath?: string): boolean {
+  const windowDays = parseInt(process.env.FB_DEDUP_WINDOW_DAYS ?? "14", 10);
+
+  // Semantic dedup: same service+headline posted or pending within the window
+  const recentMatch = db
+    .prepare(
+      `SELECT id FROM pending_posts
+       WHERE service = ?
+         AND headline = ?
+         AND status IN ('pending', 'posted')
+         AND created_at >= datetime('now', '-' || ? || ' days')
+       LIMIT 1`
+    )
+    .get(ad.service, ad.headline, windowDays);
+
+  if (recentMatch) {
+    console.log(`[queue] Headline seen within ${windowDays}d (${ad.service}) — skipping`);
+    return false;
+  }
+
   const hash = createHash("sha256")
     .update(ad.headline + "\0" + ad.body + "\0" + ad.cta)
     .digest("hex");
