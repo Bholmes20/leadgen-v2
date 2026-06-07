@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const SITE_URL = "https://leads.eseeent.com";
 const BUSINESS_NAME = "Esee Property Services";
-const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "(762) XXX-XXXX";
+const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "706-828-1733";
 const PAGE_TITLE = "Junk Removal in Augusta, GA";
 const PAGE_URL = `${SITE_URL}/junk-removal-augusta-ga`;
 

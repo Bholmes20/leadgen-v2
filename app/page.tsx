@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "(762) XXX-XXXX";
+const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "706-828-1733";
 const BUSINESS_NAME = "Esee Property Services";
 
 const SERVICE_AREAS = [

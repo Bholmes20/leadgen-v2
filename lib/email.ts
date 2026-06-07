@@ -6,7 +6,7 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const FROM = process.env.EMAIL_FROM ?? 'Esee Property Services <noreply@eseepropertyservices.com>'
 
-const BUSINESS_PHONE = '(706) 877-1026'
+const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? '706-828-1733'
 const BUSINESS_CITY  = 'Augusta, GA &amp; the CSRA'
 
 export interface LeadConfirmationParams {
