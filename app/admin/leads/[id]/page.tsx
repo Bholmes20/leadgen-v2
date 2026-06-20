@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import db from '@/lib/db'
 import { matchContractors } from '@/lib/matching'
-import { assignContractor, updateAssignment } from '../actions'
+import { assignContractor, updateAssignment, saveNotes } from '../actions'
 
 type Lead = {
   id: string
@@ -20,6 +20,11 @@ type Lead = {
   estimate_low: number | null
   estimate_high: number | null
   status: string
+  last_contacted_at: string | null
+  next_followup_at: string | null
+  followup_count: number
+  notes: string | null
+  review_send_at: string | null
 }
 
 type Assignment = {
@@ -34,11 +39,29 @@ type Assignment = {
   contractor_phone: string
 }
 
+type Communication = {
+  id: string
+  created_at: string
+  type: string
+  direction: string
+  subject: string | null
+  body: string | null
+  status: string
+  external_id: string | null
+  error: string | null
+}
+
 const ASSIGNMENT_COLORS: Record<string, string> = {
   offered:  'bg-blue-100 text-blue-800',
   accepted: 'bg-green-100 text-green-800',
   declined: 'bg-red-100 text-red-700',
   expired:  'bg-gray-100 text-gray-500',
+}
+
+const COMM_STATUS_COLORS: Record<string, string> = {
+  sent:    'bg-green-100 text-green-700',
+  pending: 'bg-yellow-100 text-yellow-700',
+  failed:  'bg-red-100 text-red-700',
 }
 
 function serviceLabel(s: string) {
@@ -51,8 +74,27 @@ function fmtDate(d: string) {
   return new Date(d + 'Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+function fmtDatetime(d: string) {
+  return new Date(d + 'Z').toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  })
+}
+
 function fmtDollars(cents: number) {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+}
+
+function subjectLabel(s: string | null): string {
+  const map: Record<string, string> = {
+    initial_customer: 'Initial greeting',
+    brandon_alert:    'Brandon alert',
+    followup_1:       '24-hour follow-up',
+    followup_2:       '3-day follow-up',
+    followup_3:       '7-day follow-up',
+    review_request:   'Review request',
+    stale:            'Marked stale',
+  }
+  return s ? (map[s] ?? s) : '—'
 }
 
 export default async function LeadDetailPage({
@@ -79,9 +121,19 @@ export default async function LeadDetailPage({
     ORDER BY a.offered_at DESC
   `).all(id) as Assignment[]
 
+  const communications = db.prepare(`
+    SELECT id, created_at, type, direction, subject, body, status, external_id, error
+    FROM communications
+    WHERE lead_id = ?
+    ORDER BY created_at DESC
+    LIMIT 50
+  `).all(id) as Communication[]
+
   const assignedContractorIds = new Set(
     assignments.filter((a) => ['offered', 'accepted'].includes(a.status)).map((a) => a.contractor_id)
   )
+
+  const FOLLOWUP_STEPS_DUE = lead.followup_count < 3 ? 3 - lead.followup_count : 0
 
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
@@ -136,6 +188,26 @@ export default async function LeadDetailPage({
                 </span>
               </dd>
             </div>
+            <div>
+              <dt className="text-gray-500">Last Contacted</dt>
+              <dd className="font-medium">
+                {lead.last_contacted_at ? fmtDatetime(lead.last_contacted_at) : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Next Follow-Up</dt>
+              <dd className={`font-medium ${lead.next_followup_at ? 'text-orange-600' : 'text-gray-400'}`}>
+                {lead.next_followup_at
+                  ? `${fmtDatetime(lead.next_followup_at)} (step ${lead.followup_count + 1}/3)`
+                  : FOLLOWUP_STEPS_DUE === 0 ? 'Complete' : '—'}
+              </dd>
+            </div>
+            {lead.review_send_at && (
+              <div className="col-span-2">
+                <dt className="text-gray-500">Review SMS Scheduled</dt>
+                <dd className="font-medium text-green-700">{fmtDatetime(lead.review_send_at)}</dd>
+              </div>
+            )}
           </dl>
 
           {photos.length > 0 && (
@@ -155,6 +227,32 @@ export default async function LeadDetailPage({
               </div>
             </div>
           )}
+        </div>
+
+        {/* Notes */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Notes</h2>
+          <form
+            action={async (formData: FormData) => {
+              'use server'
+              const notes = formData.get('notes') as string
+              await saveNotes(id, notes)
+            }}
+          >
+            <textarea
+              name="notes"
+              rows={3}
+              defaultValue={lead.notes ?? ''}
+              placeholder="Add internal notes…"
+              className="w-full text-sm rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none"
+            />
+            <button
+              type="submit"
+              className="mt-2 text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Save Notes
+            </button>
+          </form>
         </div>
 
         {/* Matched contractors */}
@@ -248,7 +346,6 @@ export default async function LeadDetailPage({
                     </span>
                   </div>
 
-                  {/* Update form */}
                   <form action={updateAssignment} className="mt-3 pt-3 border-t border-gray-50 flex items-end gap-3 flex-wrap">
                     <input type="hidden" name="assignment_id" value={a.id} />
                     <input type="hidden" name="lead_id" value={lead.id} />
@@ -287,6 +384,36 @@ export default async function LeadDetailPage({
                       Update
                     </button>
                   </form>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Communications log */}
+        {communications.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Communications Log</h2>
+            <div className="space-y-2">
+              {communications.map((c) => (
+                <div key={c.id} className="flex items-start gap-3 text-xs py-2 border-b border-gray-50 last:border-0">
+                  <div className="w-32 shrink-0 text-gray-400 pt-0.5">{fmtDatetime(c.created_at)}</div>
+                  <div className="w-16 shrink-0">
+                    <span className="uppercase font-medium text-gray-500">{c.type}</span>
+                    <span className="block text-gray-400">{c.direction}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-700">{subjectLabel(c.subject)}</p>
+                    {c.body && (
+                      <p className="text-gray-500 mt-0.5 line-clamp-2">{c.body}</p>
+                    )}
+                    {c.error && (
+                      <p className="text-red-500 mt-0.5">{c.error}</p>
+                    )}
+                  </div>
+                  <span className={`shrink-0 px-1.5 py-0.5 rounded font-medium ${COMM_STATUS_COLORS[c.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                    {c.status}
+                  </span>
                 </div>
               ))}
             </div>

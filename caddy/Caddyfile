@@ -13,12 +13,14 @@
 leads.eseeent.com {
 	tls /etc/caddy/tls/cf-cert.pem /etc/caddy/tls/cf-key.pem
 
-	# Block admin dashboard — never reachable from the public internet
+	# Protect admin dashboard with HTTP Basic Auth
 	@admin path /admin /admin/*
-	respond @admin 403
+	basic_auth @admin {
+		admin $2a$14$r7KNMEplH1uwA9Uid6Kn0.nWwVKWuTitqt0yJUIIsm110T3f0aGt2
+	}
 
-	# Block ad generation endpoint — cron jobs call :3002 directly
-	@cron path /api/generate-ads
+	# Block cron-only endpoints — cron jobs call :3002 directly
+	@cron path /api/generate-ads /api/followup-cron
 	respond @cron 403
 
 	reverse_proxy 127.0.0.1:3002 {

@@ -6,6 +6,8 @@ import db from "@/lib/db";
 import { generateEstimate, Service } from "@/lib/estimate";
 import { sendDiscordAlert } from "@/lib/discord";
 import { sendLeadConfirmation } from "@/lib/email";
+import { sendSMS } from "@/lib/sms";
+import { buildInitialCustomerSMS, buildBrandonAlertSMS, futureISO, serviceLabel } from "@/lib/followup";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
@@ -46,12 +48,13 @@ export async function POST(req: NextRequest) {
 
     // Persist to SQLite
     const id = uuidv4();
+    const nextFollowupAt = futureISO(1); // first follow-up 24h from now
     db.prepare(`
-      INSERT INTO leads (id, service, name, email, phone, address, details, photos, estimate_low, estimate_high, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')
-    `).run(id, service, name, email, phone, address, details, JSON.stringify(photos), estimate.low, estimate.high);
+      INSERT INTO leads (id, service, name, email, phone, address, details, photos, estimate_low, estimate_high, status, next_followup_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)
+    `).run(id, service, name, email, phone, address, details, JSON.stringify(photos), estimate.low, estimate.high, nextFollowupAt);
 
-    // Non-blocking side effects — neither can fail the lead submission
+    // Non-blocking side effects — none of these can fail the lead submission
     sendDiscordAlert({
       id,
       service,
@@ -67,6 +70,32 @@ export async function POST(req: NextRequest) {
 
     sendLeadConfirmation({ name, email, service, address })
       .catch((err) => console.error("Confirmation email failed:", err));
+
+    // Initial SMS to customer + Brandon alert
+    const firstName = name.split(" ")[0];
+    const svc = serviceLabel(service);
+    const BRANDON_PHONE = process.env.BRANDON_PHONE;
+
+    sendSMS({
+      to: phone,
+      body: buildInitialCustomerSMS(firstName, svc),
+      leadId: id,
+      subject: "initial_customer",
+    })
+      .then(() => {
+        db.prepare(
+          `UPDATE leads SET status='CONTACTED', last_contacted_at=datetime('now') WHERE id=? AND status='new'`
+        ).run(id);
+      })
+      .catch((err) => console.error("Initial customer SMS failed:", err));
+
+    if (BRANDON_PHONE) {
+      sendSMS({
+        to: BRANDON_PHONE,
+        body: buildBrandonAlertSMS(name, phone, service, address),
+        subject: "brandon_alert",
+      }).catch((err) => console.error("Brandon alert SMS failed:", err));
+    }
 
     return NextResponse.json({ success: true, id });
   } catch (err) {

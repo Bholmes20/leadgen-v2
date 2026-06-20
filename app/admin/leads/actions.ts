@@ -3,14 +3,45 @@
 import db from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { v4 as uuidv4 } from 'uuid'
+import { futureISO } from '@/lib/followup'
 
-const ALLOWED_STATUSES = ['NEW', 'REVIEWED', 'SENT', 'QUOTED', 'ROUTED', 'BOOKED', 'COMPLETED', 'LOST']
+const REVIEW_DELAY_DAYS = parseInt(process.env.REVIEW_DELAY_DAYS ?? '7', 10)
+
+const ALLOWED_STATUSES = [
+  'NEW', 'CONTACTED', 'REVIEWED', 'SENT', 'QUOTED',
+  'ROUTED', 'WON', 'BOOKED', 'COMPLETED', 'LOST', 'STALE',
+]
+
+// Statuses where we stop follow-ups
+const TERMINAL_STATUSES = ['WON', 'LOST', 'STALE', 'BOOKED', 'COMPLETED']
+
 const ALLOWED_ASSIGNMENT_STATUSES = ['offered', 'accepted', 'declined', 'expired']
 
 export async function updateLeadStatus(id: string, status: string) {
   if (!ALLOWED_STATUSES.includes(status)) return
-  db.prepare('UPDATE leads SET status = ? WHERE id = ?').run(status, id)
+
+  const updates: Record<string, unknown> = { status }
+
+  if (TERMINAL_STATUSES.includes(status)) {
+    updates.next_followup_at = null
+  }
+
+  if (status === 'WON' || status === 'BOOKED' || status === 'COMPLETED') {
+    updates.review_send_at = futureISO(REVIEW_DELAY_DAYS)
+  }
+
+  const setClauses = Object.keys(updates)
+    .map((k) => `${k} = ?`)
+    .join(', ')
+  const values = [...Object.values(updates), id]
+
+  db.prepare(`UPDATE leads SET ${setClauses} WHERE id = ?`).run(...values)
   revalidatePath('/admin/leads')
+}
+
+export async function saveNotes(id: string, notes: string) {
+  db.prepare('UPDATE leads SET notes = ? WHERE id = ?').run(notes.trim(), id)
+  revalidatePath(`/admin/leads/${id}`)
 }
 
 export async function assignContractor(formData: FormData) {
@@ -29,8 +60,10 @@ export async function assignContractor(formData: FormData) {
     VALUES (?, ?, ?, 'offered', datetime('now'))
   `).run(uuidv4(), leadId, contractorId)
 
-  // Advance lead to 'routed' only if it hasn't moved past that yet
-  db.prepare(`UPDATE leads SET status='ROUTED' WHERE id=? AND status IN ('new','NEW')`).run(leadId)
+  // Advance lead to 'ROUTED' only if it hasn't moved past that yet
+  db.prepare(
+    `UPDATE leads SET status='ROUTED' WHERE id=? AND UPPER(status) IN ('NEW','CONTACTED')`
+  ).run(leadId)
 
   revalidatePath(`/admin/leads/${leadId}`)
   revalidatePath('/admin/leads')
