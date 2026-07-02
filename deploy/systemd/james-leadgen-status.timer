@@ -1,0 +1,11 @@
+[Unit]
+Description=Run James Lead Gen Executive Status Reporter every 5 minutes
+Requires=james-leadgen-status.service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

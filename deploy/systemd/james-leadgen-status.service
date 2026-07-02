@@ -1,0 +1,14 @@
+[Unit]
+Description=James Lead Gen Executive Status Reporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/bdholmes212/leadgen-v2
+ExecStart=/usr/bin/python3 /home/bdholmes212/leadgen-v2/export_status.py
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
