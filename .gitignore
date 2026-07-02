@@ -47,3 +47,6 @@ logs/
 backups/
 caddy/*.pem
 caddy/*.key
+
+# James executive status
+.executive_status.json
