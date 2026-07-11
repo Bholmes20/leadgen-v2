@@ -8,6 +8,9 @@ fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 const db = new Database(DB_PATH);
 
+// WAL mode allows the backup API to run concurrently with the app without locking errors.
+db.pragma('journal_mode = WAL');
+
 db.exec(`
   -- ─── Lead intake ──────────────────────────────────────────────────────────
   CREATE TABLE IF NOT EXISTS leads (

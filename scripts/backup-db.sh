@@ -30,6 +30,7 @@ discord_alert() {
 }
 
 fail() {
+  rm -f "$BACKUP_FILE"
   log "ERROR: $*"
   discord_alert "$*"
   exit 1
