@@ -8,6 +8,8 @@ import { sendDiscordAlert } from "@/lib/discord";
 import { sendLeadConfirmation } from "@/lib/email";
 import { sendSMS } from "@/lib/sms";
 import { buildInitialCustomerSMS, buildBrandonAlertSMS, futureISO, serviceLabel } from "@/lib/followup";
+import { SUBMITTED_ATTRIBUTION_FIELDS, sanitizeAttribution } from "@/lib/attribution";
+import { resolveSourceId } from "@/lib/leadSource";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
@@ -46,13 +48,32 @@ export async function POST(req: NextRequest) {
     // Generate internal estimate
     const estimate = generateEstimate({ service, details, photoCount: photos.length });
 
+    // Lead-source attribution (never fails the submission — best-effort).
+    const attrRaw: Record<string, unknown> = {};
+    for (const k of SUBMITTED_ATTRIBUTION_FIELDS) attrRaw[k] = formData.get(k);
+    const attr = sanitizeAttribution(attrRaw);
+    const sourceId = resolveSourceId(attr);
+
     // Persist to SQLite
     const id = uuidv4();
     const nextFollowupAt = futureISO(1); // first follow-up 24h from now
     db.prepare(`
-      INSERT INTO leads (id, service, name, email, phone, address, details, photos, estimate_low, estimate_high, status, next_followup_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)
-    `).run(id, service, name, email, phone, address, details, JSON.stringify(photos), estimate.low, estimate.high, nextFollowupAt);
+      INSERT INTO leads (
+        id, service, name, email, phone, address, details, photos,
+        estimate_low, estimate_high, status, next_followup_at,
+        source_page, niche, city,
+        utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+        referrer_url, source_id
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id, service, name, email, phone, address, details, JSON.stringify(photos),
+      estimate.low, estimate.high, nextFollowupAt,
+      attr.source_page ?? null, attr.niche ?? null, attr.city ?? null,
+      attr.utm_source ?? null, attr.utm_medium ?? null, attr.utm_campaign ?? null,
+      attr.utm_term ?? null, attr.utm_content ?? null,
+      attr.referrer ?? null, sourceId,
+    );
 
     // Non-blocking side effects — none of these can fail the lead submission
     sendDiscordAlert({

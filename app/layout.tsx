@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import Analytics from "@/components/Analytics";
+import AttributionTracker from "@/components/AttributionTracker";
+import { buildOrganizationSchema } from "@/lib/seo/schema";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -10,32 +13,32 @@ const BUSINESS_NAME = "Esee Property Services";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${BUSINESS_NAME} | Junk Removal & Landscaping | Augusta GA`,
+    default: `${BUSINESS_NAME} | Property Cleanouts & Junk Removal | Augusta, GA`,
     template: `%s | ${BUSINESS_NAME}`,
   },
   description:
-    "Esee Property Services offers fast, affordable junk removal and landscaping in Augusta, Evans, Grovetown, Martinez, North Augusta, and Aiken. Get a free quote today.",
+    "Esee Property Services connects property owners across the Augusta, GA / CSRA area with local providers for rental cleanouts, junk & debris removal, carpet removal, overgrown-lot cleanup, and more. Get a free quote.",
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: BUSINESS_NAME,
-    title: `${BUSINESS_NAME} | Junk Removal & Landscaping | Augusta GA`,
+    title: `${BUSINESS_NAME} | Local Property Cleanout & Removal Services | Augusta, GA`,
     description:
-      "Fast, affordable junk removal and landscaping serving the Augusta, GA metro area. Free quotes — same-day service available.",
+      "A local service-matching platform for the Augusta, GA area — we connect you with local providers for cleanouts, junk removal, and property services. Free quotes.",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: `${BUSINESS_NAME} — Junk Removal & Landscaping in Augusta GA`,
+        alt: `${BUSINESS_NAME} — Property Cleanout & Removal Services in the Augusta, GA area`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${BUSINESS_NAME} | Junk Removal & Landscaping | Augusta GA`,
+    title: `${BUSINESS_NAME} | Property Cleanout & Removal | Augusta, GA`,
     description:
-      "Fast, affordable junk removal and landscaping in Augusta, GA. Free quotes — same-day service.",
+      "We connect Augusta-area property owners with local providers for cleanouts, junk removal, and more. Free quotes.",
     images: ["/og-image.jpg"],
   },
   alternates: {
@@ -43,46 +46,9 @@ export const metadata: Metadata = {
   },
 };
 
-const localBusinessSchema = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: BUSINESS_NAME,
-  description:
-    "Fast, affordable junk removal and landscaping serving Augusta, GA and surrounding CSRA communities.",
-  url: SITE_URL,
-  telephone: process.env.BUSINESS_PHONE ?? "",
-  priceRange: "$$",
-  areaServed: [
-    { "@type": "City", name: "Augusta", addressRegion: "GA" },
-    { "@type": "City", name: "Evans", addressRegion: "GA" },
-    { "@type": "City", name: "Grovetown", addressRegion: "GA" },
-    { "@type": "City", name: "Martinez", addressRegion: "GA" },
-    { "@type": "City", name: "North Augusta", addressRegion: "SC" },
-    { "@type": "City", name: "Aiken", addressRegion: "SC" },
-  ],
-  hasOfferCatalog: {
-    "@type": "OfferCatalog",
-    name: "Property Services",
-    itemListElement: [
-      {
-        "@type": "Offer",
-        itemOffered: { "@type": "Service", name: "Junk Removal" },
-      },
-      {
-        "@type": "Offer",
-        itemOffered: { "@type": "Service", name: "Landscaping" },
-      },
-      {
-        "@type": "Offer",
-        itemOffered: { "@type": "Service", name: "Yard Cleanup" },
-      },
-      {
-        "@type": "Offer",
-        itemOffered: { "@type": "Service", name: "Property Cleanup" },
-      },
-    ],
-  },
-};
+// Site-wide identity: an Organization (service-matching platform), not a LocalBusiness
+// that performs the work. Built from the registry in lib/seo/schema.ts.
+const organizationSchema = buildOrganizationSchema();
 
 export default function RootLayout({
   children,
@@ -97,9 +63,13 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(localBusinessSchema).replace(/</g, "\\u003c"),
+            __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c"),
           }}
         />
+        {/* Global first-touch UTM/referrer capture (no source_page — never overwrites a
+            landing page's context). Landing pages/hubs add their own page context. */}
+        <AttributionTracker />
+        <Analytics />
         {children}
       </body>
     </html>

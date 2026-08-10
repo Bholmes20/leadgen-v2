@@ -2,7 +2,9 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-const DB_PATH = path.join(process.cwd(), "data", "leads.db");
+// Defaults to the production DB. LEADS_DB_PATH lets an isolated/test process point at
+// a throwaway DB without touching production data (default behavior is unchanged).
+const DB_PATH = process.env.LEADS_DB_PATH ?? path.join(process.cwd(), "data", "leads.db");
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
@@ -262,6 +264,11 @@ addColumn("projects", "longitude", "REAL");
 
 // pending_posts — image_path (pre-existing installs may be missing this)
 addColumn("pending_posts", "image_path", "TEXT");
+
+// leads — SEO page-factory attribution (utm_*, referrer_url, source_id already added above)
+addColumn("leads", "source_page", "TEXT");
+addColumn("leads", "niche", "TEXT");
+addColumn("leads", "city", "TEXT");
 
 // leads — CRM follow-up fields
 addColumn("leads", "last_contacted_at", "TEXT");

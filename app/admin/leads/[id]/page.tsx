@@ -25,6 +25,16 @@ type Lead = {
   followup_count: number
   notes: string | null
   review_send_at: string | null
+  source_page: string | null
+  niche: string | null
+  city: string | null
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  utm_term: string | null
+  utm_content: string | null
+  referrer_url: string | null
+  source_id: string | null
 }
 
 type Assignment = {
@@ -112,6 +122,26 @@ export default async function LeadDetailPage({
   })()
 
   const matches = matchContractors(lead.service, lead.zip)
+
+  const leadSource = lead.source_id
+    ? (db.prepare('SELECT name, channel FROM lead_sources WHERE id=?').get(lead.source_id) as
+        | { name: string; channel: string }
+        | undefined)
+    : undefined
+
+  // Prettify the niche slug (e.g. "rental-property-cleanout" → "Rental Property Cleanout").
+  const nicheLabel = lead.niche
+    ? lead.niche.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    : null
+  const cityLabel = lead.city
+    ? lead.city.replace(/-([a-z]{2})$/i, (_, s) => `, ${s.toUpperCase()}`).replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    : null
+  const trafficSource = leadSource
+    ? `${leadSource.name} (${leadSource.channel})`
+    : lead.utm_source ?? null
+  const hasAttribution = Boolean(
+    lead.source_page || lead.niche || lead.city || lead.utm_source || lead.utm_campaign || lead.referrer_url,
+  )
 
   const assignments = db.prepare(`
     SELECT a.*, c.name as contractor_name, c.phone as contractor_phone
@@ -226,6 +256,65 @@ export default async function LeadDetailPage({
                 ))}
               </div>
             </div>
+          )}
+        </div>
+
+        {/* Attribution */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Attribution</h2>
+          {!hasAttribution ? (
+            <p className="text-sm text-gray-400">
+              Direct / not tracked — no landing-page or campaign data on this lead.
+            </p>
+          ) : (
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div>
+                <dt className="text-gray-500">Niche / Service</dt>
+                <dd className="font-medium">{nicheLabel ?? serviceLabel(lead.service)}</dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">City</dt>
+                <dd className="font-medium">{cityLabel ?? '—'}</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-gray-500">Source Page</dt>
+                <dd className="font-medium break-all">
+                  {lead.source_page ? (
+                    <a href={lead.source_page} target="_blank" rel="noopener noreferrer" className="hover:text-green-600">
+                      {lead.source_page}
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Traffic Source</dt>
+                <dd className="font-medium">{trafficSource ?? 'Direct'}</dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Medium</dt>
+                <dd className="font-medium">{lead.utm_medium ?? '—'}</dd>
+              </div>
+              <div className="col-span-2">
+                <dt className="text-gray-500">Campaign</dt>
+                <dd className="font-medium">{lead.utm_campaign ?? '—'}</dd>
+              </div>
+              {(lead.utm_term || lead.utm_content) && (
+                <div className="col-span-2">
+                  <dt className="text-gray-500">Term / Content</dt>
+                  <dd className="font-medium">
+                    {[lead.utm_term, lead.utm_content].filter(Boolean).join(' · ') || '—'}
+                  </dd>
+                </div>
+              )}
+              {lead.referrer_url && (
+                <div className="col-span-2">
+                  <dt className="text-gray-500">Referrer</dt>
+                  <dd className="font-medium break-all">{lead.referrer_url}</dd>
+                </div>
+              )}
+            </dl>
           )}
         </div>
 

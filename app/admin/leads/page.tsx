@@ -16,6 +16,9 @@ type Lead = {
   status: string
   photos: string
   next_followup_at: string | null
+  niche: string | null
+  city: string | null
+  utm_source: string | null
 }
 
 type Counts = {
@@ -75,6 +78,14 @@ function serviceLabel(s: string) {
   return s
 }
 
+function cityLabel(c: string | null) {
+  if (!c) return null
+  return c
+    .replace(/-([a-z]{2})$/i, (_, s) => `, ${s.toUpperCase()}`)
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (ch) => ch.toUpperCase())
+}
+
 const TABS: { key: View; label: string; countKey: keyof Counts }[] = [
   { key: 'all',      label: 'All',          countKey: 'total' },
   { key: 'new',      label: 'New',          countKey: 'new_count' },
@@ -115,7 +126,8 @@ export default async function AdminLeadsPage({
 
   const leads = db
     .prepare(
-      `SELECT id, created_at, service, name, phone, address, estimate_low, estimate_high, status, photos, next_followup_at
+      `SELECT id, created_at, service, name, phone, address, estimate_low, estimate_high, status, photos, next_followup_at,
+              niche, city, utm_source
        FROM leads ${sql} ORDER BY ${orderBy}`
     )
     .all(...params) as Lead[]
@@ -168,6 +180,7 @@ export default async function AdminLeadsPage({
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Service</th>
+                    <th className="px-4 py-3">Source</th>
                     <th className="px-4 py-3">Phone</th>
                     <th className="px-4 py-3">Address</th>
                     <th className="px-4 py-3">Estimate</th>
@@ -194,6 +207,18 @@ export default async function AdminLeadsPage({
                         </td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                           {serviceLabel(lead.service)}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                          {cityLabel(lead.city) || lead.utm_source ? (
+                            <div className="flex flex-col leading-tight">
+                              {cityLabel(lead.city) && <span>{cityLabel(lead.city)}</span>}
+                              {lead.utm_source && (
+                                <span className="text-xs text-gray-400">{lead.utm_source}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                           <a href={`tel:${lead.phone}`} className="hover:text-green-600">

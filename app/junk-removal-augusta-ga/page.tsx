@@ -30,7 +30,7 @@ const serviceSchema = {
   description:
     "Esee Property Services connects Augusta, GA residents with local junk haulers for furniture removal, appliance haul-away, garage cleanouts, and more.",
   provider: {
-    "@type": "LocalBusiness",
+    "@type": "Organization",
     name: BUSINESS_NAME,
     url: SITE_URL,
   },
