@@ -13,21 +13,21 @@ export const FOLLOWUP_STEPS: FollowUpStep[] = [
     count: 0,
     subject: 'followup_1',
     message: (firstName, service) =>
-      `Hi ${firstName}, just checking to see if you still need help with your ${service} project. Let us know if you have any questions. - Esee Property Services`,
+      `Hi ${firstName}, still need ${service}? We have openings this week. Call or text ${BUSINESS_PHONE} to lock in your free estimate. - Esee Property Services`,
     nextOffsetDays: 2,
   },
   {
     count: 1,
     subject: 'followup_2',
-    message: (firstName) =>
-      `Hi ${firstName}, we're following up on your quote request. If you still need help, we're happy to provide a free estimate. Reply or call us at ${BUSINESS_PHONE}. - Esee Property Services`,
+    message: (firstName, service) =>
+      `Hi ${firstName}, we'd still love to handle your ${service}. Spots fill fast. Call or text ${BUSINESS_PHONE} for a free estimate. - Esee Property Services`,
     nextOffsetDays: 4,
   },
   {
     count: 2,
     subject: 'followup_3',
-    message: (firstName) =>
-      `Hi ${firstName}, before we close your request, we wanted to see if you still need service. We're here if you do! - Esee Property Services`,
+    message: (firstName, service) =>
+      `Hi ${firstName}, last chance - closing your ${service} request soon. Still need it? Reply or call ${BUSINESS_PHONE}. - Esee Property Services`,
     nextOffsetDays: 7,
   },
   {
@@ -40,16 +40,31 @@ export const FOLLOWUP_STEPS: FollowUpStep[] = [
 ]
 
 export function buildInitialCustomerSMS(firstName: string, service: string): string {
-  return `Hi ${firstName}, thanks for contacting Esee Property Services! We received your ${service} request and will contact you shortly. If you have photos of the project, feel free to reply with them for a faster quote.`
+  return `Hi ${firstName}! Got your ${service} request. We'll call today to set up your free estimate. Reply with photos if you have them. - Esee Property Services`
 }
 
-export function buildBrandonAlertSMS(name: string, phone: string, service: string, address: string): string {
+function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, '')
+  if (d.length === 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  if (d.length === 11 && d[0] === '1') return `(${d.slice(1, 4)}) ${d.slice(4, 7)}-${d.slice(7)}`
+  return raw
+}
+
+export function buildBrandonAlertSMS(
+  name: string,
+  phone: string,
+  service: string,
+  address: string,
+  estimateLow?: number,
+  estimateHigh?: number,
+): string {
   const svc = service === 'junk-removal' ? 'Junk Removal' : 'Landscaping'
-  return `New ${svc} Lead\nName: ${name}\nPhone: ${phone}\nAddress: ${address}`
+  const estLine = estimateLow && estimateHigh ? `\nEst: $${estimateLow}-$${estimateHigh}` : ''
+  return `New ${svc} Lead\n${name} | ${formatPhone(phone)}\n${address}${estLine}`
 }
 
 export function buildReviewSMS(firstName: string, reviewLink: string): string {
-  return `Hi ${firstName}, thank you for choosing Esee Property Services! Reviews help small businesses like ours tremendously. Would you mind leaving us a quick Google review? ${reviewLink} Thanks!`
+  return `Hi ${firstName}, hope the job turned out great! Mind leaving us a Google review? Takes 30 sec: ${reviewLink} - Esee Property Services`
 }
 
 export function futureISO(days: number): string {

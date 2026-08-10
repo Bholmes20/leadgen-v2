@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     if (BRANDON_PHONE) {
       sendSMS({
         to: BRANDON_PHONE,
-        body: buildBrandonAlertSMS(name, phone, service, address),
+        body: buildBrandonAlertSMS(name, phone, service, address, estimate.low, estimate.high),
         subject: "brandon_alert",
       }).catch((err) => console.error("Brandon alert SMS failed:", err));
     }
