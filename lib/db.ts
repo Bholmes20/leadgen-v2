@@ -212,6 +212,15 @@ db.exec(`
     PRIMARY KEY (project_id, permit_id)
   );
 
+  -- ─── Application flags / breakers ─────────────────────────────────────────
+  -- Small key/value store for runtime safety state that must survive restarts.
+  -- e.g. 'sms_auto_disabled_until' = UTC timestamp the SMS auto-breaker lifts.
+  CREATE TABLE IF NOT EXISTS app_flags (
+    key        TEXT PRIMARY KEY,
+    value      TEXT,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   -- ─── Social post queue ────────────────────────────────────────────────────
   CREATE TABLE IF NOT EXISTS pending_posts (
     id           TEXT PRIMARY KEY,
@@ -279,5 +288,12 @@ addColumn("leads", "review_send_at", "TEXT");
 
 // communications — error details for failed sends
 addColumn("communications", "error", "TEXT");
+
+// leads — communication-safety counters (P0). These start at 0 for every
+// existing lead; the ~22k historical failed communications do NOT initialize
+// or inflate them. Attempts are only incremented by NEW automation attempts.
+addColumn("leads", "followup_attempts", "INTEGER NOT NULL DEFAULT 0");
+addColumn("leads", "review_attempts", "INTEGER NOT NULL DEFAULT 0");
+addColumn("leads", "last_followup_result", "TEXT");
 
 export default db;

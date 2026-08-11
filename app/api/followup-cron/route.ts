@@ -4,14 +4,17 @@ import { sendSMS } from '@/lib/sms'
 import {
   FOLLOWUP_STEPS,
   buildReviewSMS,
-  futureISO,
+  planFollowup,
+  planReview,
   serviceLabel,
 } from '@/lib/followup'
+import { isStaleSchedule } from '@/lib/smsConfig'
 
 const CRON_SECRET = process.env.CRON_SECRET
 const GOOGLE_REVIEW_LINK = process.env.GOOGLE_REVIEW_LINK ?? ''
 
-// Statuses where follow-ups should stop
+// Statuses where follow-ups should stop (case-insensitive: production data
+// contains mixed/lowercase statuses like 'new').
 const TERMINAL = ['WON', 'LOST', 'STALE', 'COMPLETED', 'BOOKED']
 const TERMINAL_PLACEHOLDERS = TERMINAL.map(() => '?').join(',')
 
@@ -21,12 +24,16 @@ type FollowUpLead = {
   phone: string
   service: string
   followup_count: number
+  followup_attempts: number
+  next_followup_at: string
 }
 
 type ReviewLead = {
   id: string
   name: string
   phone: string
+  review_attempts: number
+  review_send_at: string
 }
 
 export async function POST(req: NextRequest) {
@@ -35,97 +42,142 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const now = new Date()
   let followupsSent = 0
   let reviewsSent = 0
   let markedStale = 0
+  let skippedStale = 0
+  let deferred = 0
   const errors: string[] = []
+
+  // Persist a follow-up scheduling decision + observability breadcrumb.
+  const applyFollowup = db.prepare(
+    `UPDATE leads
+        SET status              = CASE WHEN ? = 1 THEN 'STALE' ELSE status END,
+            followup_count      = followup_count + CASE WHEN ? = 1 THEN 1 ELSE 0 END,
+            followup_attempts   = ?,
+            last_contacted_at   = CASE WHEN ? = 1 THEN datetime('now') ELSE last_contacted_at END,
+            next_followup_at    = ?,
+            last_followup_result= ?
+      WHERE id = ?`,
+  )
 
   // ── Follow-up sequence ────────────────────────────────────────────────────
   const dueLeads = db
     .prepare(
-      `SELECT id, name, phone, service, followup_count
-       FROM leads
-       WHERE next_followup_at IS NOT NULL
-         AND next_followup_at <= datetime('now')
-         AND UPPER(status) NOT IN (${TERMINAL_PLACEHOLDERS})
-       ORDER BY next_followup_at ASC
-       LIMIT 20`
+      `SELECT id, name, phone, service, followup_count, followup_attempts, next_followup_at
+         FROM leads
+        WHERE next_followup_at IS NOT NULL
+          AND next_followup_at <= datetime('now')
+          AND UPPER(status) NOT IN (${TERMINAL_PLACEHOLDERS})
+        ORDER BY next_followup_at ASC
+        LIMIT 20`,
     )
     .all(...TERMINAL) as FollowUpLead[]
 
   for (const lead of dueLeads) {
     const step = FOLLOWUP_STEPS.find((s) => s.count === lead.followup_count)
-    if (!step) continue
 
-    if (step.isStale) {
-      db.prepare(
-        `UPDATE leads SET status='STALE', next_followup_at=NULL WHERE id=?`
-      ).run(lead.id)
+    // Unknown/exhausted step → retire safely.
+    if (!step) {
+      applyFollowup.run(1, 0, lead.followup_attempts, 0, null, 'no_step', lead.id)
       markedStale++
       continue
     }
 
-    // Idempotency: skip if this step was already sent successfully
+    if (step.isStale) {
+      applyFollowup.run(1, 0, lead.followup_attempts, 0, null, 'stale', lead.id)
+      markedStale++
+      continue
+    }
+
+    // No-catch-up guard: a schedule older than the catch-up window is
+    // historical — retire it instead of sending a stale message.
+    if (isStaleSchedule(lead.next_followup_at, now)) {
+      applyFollowup.run(1, 0, lead.followup_attempts, 0, null, 'skipped_stale', lead.id)
+      skippedStale++
+      continue
+    }
+
+    // Idempotency: this step already went out successfully — advance the pointer.
     const alreadySent = db
       .prepare(
         `SELECT id FROM communications
-         WHERE lead_id=? AND type='sms' AND direction='outbound'
-           AND subject=? AND status='sent'`
+          WHERE lead_id=? AND type='sms' AND direction='outbound'
+            AND subject=? AND status='sent'`,
       )
       .get(lead.id, step.subject)
 
     if (alreadySent) {
-      // Advance the pointer without sending again
-      db.prepare(
-        `UPDATE leads SET followup_count=followup_count+1, next_followup_at=? WHERE id=?`
-      ).run(futureISO(step.nextOffsetDays), lead.id)
+      const plan = planFollowup('sent', {
+        attempts: lead.followup_attempts,
+        stepOffsetDays: step.nextOffsetDays,
+        now,
+      })
+      applyFollowup.run(0, 1, plan.attempts, 0, plan.nextFollowupAt, 'already_sent', lead.id)
       continue
     }
 
     const firstName = lead.name.split(' ')[0]
-    const svc = serviceLabel(lead.service)
-    const message = step.message(firstName, svc)
+    const message = step.message(firstName, serviceLabel(lead.service))
 
-    try {
-      await sendSMS({ to: lead.phone, body: message, leadId: lead.id, subject: step.subject })
+    const result = await sendSMS({ to: lead.phone, body: message, leadId: lead.id, subject: step.subject })
 
-      db.prepare(
-        `UPDATE leads
-         SET followup_count    = followup_count + 1,
-             last_contacted_at = datetime('now'),
-             next_followup_at  = ?
-         WHERE id=?`
-      ).run(futureISO(step.nextOffsetDays), lead.id)
+    const plan = planFollowup(result.status, {
+      attempts: lead.followup_attempts,
+      stepOffsetDays: step.nextOffsetDays,
+      authFailure: result.authFailure,
+      now,
+    })
 
-      followupsSent++
-    } catch (err) {
-      errors.push(`followup ${lead.id}: ${err}`)
-      console.error(`followup-cron: failed for lead ${lead.id}:`, err)
+    applyFollowup.run(
+      plan.makeTerminal ? 1 : 0,
+      plan.advanceStep ? 1 : 0,
+      plan.attempts,
+      plan.markContacted ? 1 : 0,
+      plan.nextFollowupAt,
+      plan.reason,
+      lead.id,
+    )
+
+    if (result.status === 'sent') followupsSent++
+    else if (plan.makeTerminal) markedStale++
+    else deferred++
+
+    if (result.status !== 'sent') {
+      errors.push(`followup ${lead.id}: ${plan.reason}${result.error ? ` (${result.error})` : ''}`)
     }
+
+    // Kill switch / cap / auth failure → stop the batch; nothing else will send.
+    if (plan.stopBatch) break
   }
 
   // ── Review request automation ─────────────────────────────────────────────
+  const applyReview = db.prepare(
+    `UPDATE leads SET review_send_at = ?, review_attempts = ? WHERE id = ?`,
+  )
+
   const reviewDue = db
     .prepare(
-      `SELECT id, name, phone FROM leads
-       WHERE review_send_at IS NOT NULL
-         AND review_send_at <= datetime('now')
-       LIMIT 20`
+      `SELECT id, name, phone, review_attempts, review_send_at FROM leads
+        WHERE review_send_at IS NOT NULL
+          AND review_send_at <= datetime('now')
+        LIMIT 20`,
     )
     .all() as ReviewLead[]
 
   for (const lead of reviewDue) {
-    // Idempotency: don't send if review was already sent
+    // Idempotency: already reviewed → clear.
     const alreadySent = db
       .prepare(
         `SELECT id FROM communications
-         WHERE lead_id=? AND type='sms' AND direction='outbound'
-           AND subject='review_request' AND status='sent'`
+          WHERE lead_id=? AND type='sms' AND direction='outbound'
+            AND subject='review_request' AND status='sent'`,
       )
       .get(lead.id)
 
     if (alreadySent) {
-      db.prepare(`UPDATE leads SET review_send_at=NULL WHERE id=?`).run(lead.id)
+      applyReview.run(null, lead.review_attempts, lead.id)
       continue
     }
 
@@ -134,18 +186,26 @@ export async function POST(req: NextRequest) {
       break
     }
 
+    // No-catch-up guard for reviews.
+    if (isStaleSchedule(lead.review_send_at, now)) {
+      applyReview.run(null, lead.review_attempts, lead.id)
+      skippedStale++
+      continue
+    }
+
     const firstName = lead.name.split(' ')[0]
     const message = buildReviewSMS(firstName, GOOGLE_REVIEW_LINK)
 
-    try {
-      await sendSMS({ to: lead.phone, body: message, leadId: lead.id, subject: 'review_request' })
-      db.prepare(`UPDATE leads SET review_send_at=NULL WHERE id=?`).run(lead.id)
-      reviewsSent++
-    } catch (err) {
-      errors.push(`review ${lead.id}: ${err}`)
-      console.error(`followup-cron: review SMS failed for lead ${lead.id}:`, err)
-    }
+    const result = await sendSMS({ to: lead.phone, body: message, leadId: lead.id, subject: 'review_request' })
+
+    const plan = planReview(result.status, { attempts: lead.review_attempts, authFailure: result.authFailure, now })
+    applyReview.run(plan.reviewSendAt, plan.attempts, lead.id)
+
+    if (result.status === 'sent') reviewsSent++
+    else errors.push(`review ${lead.id}: ${plan.reason}${result.error ? ` (${result.error})` : ''}`)
+
+    if (plan.stopBatch) break
   }
 
-  return NextResponse.json({ followupsSent, reviewsSent, markedStale, errors })
+  return NextResponse.json({ followupsSent, reviewsSent, markedStale, skippedStale, deferred, errors })
 }

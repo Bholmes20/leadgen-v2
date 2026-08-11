@@ -97,23 +97,31 @@ export async function POST(req: NextRequest) {
     const svc = serviceLabel(service);
     const BRANDON_PHONE = process.env.BRANDON_PHONE;
 
+    // SMS is a notification side effect — never a prerequisite for recording a
+    // lead. sendSMS is fully protected (kill switch, cap, breaker) and never
+    // throws; we only advance the lead to CONTACTED when a message truly sent.
     sendSMS({
       to: phone,
       body: buildInitialCustomerSMS(firstName, svc),
       leadId: id,
       subject: "initial_customer",
     })
-      .then(() => {
-        db.prepare(
-          `UPDATE leads SET status='CONTACTED', last_contacted_at=datetime('now') WHERE id=? AND status='new'`
-        ).run(id);
+      .then((result) => {
+        if (result.status === "sent") {
+          db.prepare(
+            `UPDATE leads SET status='CONTACTED', last_contacted_at=datetime('now') WHERE id=? AND status='new'`
+          ).run(id);
+        }
       })
       .catch((err) => console.error("Initial customer SMS failed:", err));
 
     if (BRANDON_PHONE) {
+      // leadId is passed so the admin alert is logged and counted against the
+      // global daily cap — no sender can bypass the central limits.
       sendSMS({
         to: BRANDON_PHONE,
         body: buildBrandonAlertSMS(name, phone, service, address, estimate.low, estimate.high),
+        leadId: id,
         subject: "brandon_alert",
       }).catch((err) => console.error("Brandon alert SMS failed:", err));
     }
