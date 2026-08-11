@@ -12,7 +12,7 @@
  *   FB_PAGE_ID              — numeric Page ID
  *   FB_PAGE_ACCESS_TOKEN    — long-lived Page access token
  *   FB_APPROVE_DELAY_HOURS  — hours to wait before auto-posting (default: 2)
- *   FB_SITE_URL             — appended to every post (e.g. https://leads.eseeeent.com)
+ *   FB_SITE_URL             — appended to every post (e.g. https://leads.eseeent.com)
  */
 
 import fs from "fs";

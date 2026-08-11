@@ -81,7 +81,7 @@ cat <<'INSTRUCTIONS'
     2. Click "Create Certificate"
     3. Let Cloudflare generate the key pair
     4. Validity: 15 years
-    5. Hostnames: leads.eseeeent.com  (or eseeeent.com + *.eseeeent.com for wildcard)
+    5. Hostnames: leads.eseeent.com  (or eseent.com + *.eseent.com for wildcard)
 
   Step B — Install the certificate:
     sudo nano /etc/caddy/tls/cf-cert.pem   ← paste the CERTIFICATE
@@ -95,7 +95,7 @@ cat <<'INSTRUCTIONS'
     sudo journalctl -u caddy -f
 
   Step D — Cloudflare settings:
-    DNS:     A record for leads.eseeeent.com → your public IP, Proxy on (orange cloud)
+    DNS:     A record for leads.eseeent.com → your public IP, Proxy on (orange cloud)
     SSL/TLS: Full (strict)
     Always Use HTTPS: On
 
