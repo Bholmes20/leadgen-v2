@@ -12,6 +12,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/contractors" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
             Contractors
           </Link>
+          <Link href="/admin/intelligence" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+            Intelligence
+          </Link>
         </div>
       </nav>
       {children}

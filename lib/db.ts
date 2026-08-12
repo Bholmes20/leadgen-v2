@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import { ensureIntelSchema } from "./intel/schema";
 
 // Defaults to the production DB. LEADS_DB_PATH lets an isolated/test process point at
 // a throwaway DB without touching production data (default behavior is unchanged).
@@ -295,5 +296,10 @@ addColumn("communications", "error", "TEXT");
 addColumn("leads", "followup_attempts", "INTEGER NOT NULL DEFAULT 0");
 addColumn("leads", "review_attempts", "INTEGER NOT NULL DEFAULT 0");
 addColumn("leads", "last_followup_result", "TEXT");
+
+// ─── Opportunity + Growth Intelligence layer (additive, namespaced intel_*) ──
+// Runs on the same connection so any DB code path gets the intel schema. Pure
+// CREATE TABLE IF NOT EXISTS — never alters existing tables (lib/intel/schema.ts).
+ensureIntelSchema(db);
 
 export default db;
