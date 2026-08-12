@@ -10,14 +10,18 @@ export const dynamic = 'force-dynamic'
 import {
   listOpportunities,
   listRecommendations,
-  listMarkets,
-  listNiches,
-  integrationStatus,
   parseComponents,
   parseReasons,
+  getSystemStatus,
+  getLeadPerformance,
+  buildPagePerformance,
+  listSignals,
+  listRecentActivity,
   SCORE_COMPONENTS,
   type OpportunityWithContext,
   type ScoreComponent,
+  type MetricValue,
+  type ConnectionState,
 } from '@/lib/intel'
 
 const COMPONENT_LABELS: Record<ScoreComponent, string> = {
@@ -60,6 +64,60 @@ function verdictBadge(v: string | null): string {
     default:
       return 'bg-gray-100 text-gray-600'
   }
+}
+
+function connectionBadge(state: ConnectionState): string {
+  switch (state) {
+    case 'CONNECTED':
+      return 'bg-green-100 text-green-800'
+    case 'NOT_CONNECTED':
+      return 'bg-gray-100 text-gray-500'
+    case 'UNAVAILABLE':
+      return 'bg-amber-100 text-amber-800'
+    default:
+      return 'bg-gray-100 text-gray-500'
+  }
+}
+
+function severityBadge(sev: string): string {
+  switch (sev) {
+    case 'critical':
+      return 'bg-red-100 text-red-700'
+    case 'warning':
+      return 'bg-amber-100 text-amber-800'
+    case 'notice':
+      return 'bg-blue-100 text-blue-800'
+    default:
+      return 'bg-gray-100 text-gray-600'
+  }
+}
+
+// Render a MetricValue with its provenance so a number is never mistaken for a
+// measured fact when it is derived/estimated/unknown.
+function Metric({ label, m, unit }: { label: string; m: MetricValue; unit?: string }) {
+  const display =
+    m.value === null
+      ? '—'
+      : unit === '%'
+        ? `${(m.value * 100).toFixed(1)}%`
+        : unit === 'h'
+          ? `${m.value.toFixed(1)}h`
+          : String(m.value)
+  const qualityColor =
+    m.quality === 'MEASURED'
+      ? 'text-green-700'
+      : m.quality === 'DERIVED'
+        ? 'text-blue-700'
+        : m.quality === 'ESTIMATED'
+          ? 'text-amber-700'
+          : 'text-gray-400'
+  return (
+    <div className="border border-gray-200 rounded-lg p-3 bg-white">
+      <div className="text-lg font-bold text-gray-900">{display}</div>
+      <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+      <div className={`text-[10px] uppercase mt-1 font-medium ${qualityColor}`}>{m.quality}</div>
+    </div>
+  )
 }
 
 function ComponentBars({ opp }: { opp: OpportunityWithContext }) {
@@ -135,10 +193,16 @@ export default async function IntelligencePage() {
   const scored = opportunities.filter((o) => o.score_overall !== null)
   const unscored = opportunities.filter((o) => o.score_overall === null)
   const recommendations = listRecommendations()
-  const proposed = recommendations.filter((r) => r.status === 'PROPOSED')
-  const integrations = integrationStatus()
-  const markets = listMarkets()
-  const niches = listNiches()
+
+  // P1B read-only views — all derived from real stored data; nothing is generated
+  // or mutated on render.
+  const status = getSystemStatus()
+  const perf = getLeadPerformance()
+  const pages = buildPagePerformance()
+  const signals = listSignals('OPEN')
+  const activity = listRecentActivity(20)
+
+  const pagesWithLeads = pages.filter((p) => p.leads > 0)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
@@ -146,44 +210,187 @@ export default async function IntelligencePage() {
         <h1 className="text-2xl font-bold text-gray-900">Opportunity &amp; Growth Intelligence</h1>
         <p className="text-sm text-gray-500 mt-1">
           Read-only. No page here publishes, spends, or deploys — those stay behind explicit approval.
+          Numbers are tagged <span className="text-green-700 font-medium">MEASURED</span> /{' '}
+          <span className="text-blue-700 font-medium">DERIVED</span> /{' '}
+          <span className="text-gray-400 font-medium">UNKNOWN</span> — never fabricated.
         </p>
       </header>
 
-      {/* Snapshot counters */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: 'Markets', value: markets.length },
-          { label: 'Niches', value: niches.length },
-          { label: 'Opportunities', value: opportunities.length },
-          { label: 'Open recommendations', value: proposed.length },
-        ].map((s) => (
-          <div key={s.label} className="border border-gray-200 rounded-lg p-4 bg-white">
-            <div className="text-2xl font-bold text-gray-900">{s.value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Integration status — honest data coverage */}
+      {/* SYSTEM STATUS — counts + honest integration coverage */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Data coverage</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {integrations.map((i) => (
-            <div key={i.source} className="border border-gray-200 rounded-lg p-3 bg-white">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900 uppercase text-xs">{i.source}</span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded ${
-                    i.available ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  {i.available ? 'connected' : 'not connected'}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">{i.reason}</p>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">System status</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          {[
+            { label: 'Markets', value: status.counts.markets },
+            { label: 'Niches', value: status.counts.niches },
+            { label: 'Opportunities', value: status.counts.opportunities },
+            { label: 'Leads', value: status.counts.leads },
+            { label: 'Open signals', value: status.counts.openSignals },
+            { label: 'Open recommendations', value: status.counts.openRecommendations },
+            { label: 'Scored opportunities', value: status.counts.scoredOpportunities },
+            { label: 'Activity events', value: status.counts.activityEvents },
+          ].map((s) => (
+            <div key={s.label} className="border border-gray-200 rounded-lg p-4 bg-white">
+              <div className="text-2xl font-bold text-gray-900">{s.value}</div>
+              <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
             </div>
           ))}
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {status.integrations.map((i) => (
+            <div key={i.key} className="border border-gray-200 rounded-lg p-3 bg-white">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-gray-900 text-sm">{i.label}</span>
+                <span className={`text-xs px-2 py-0.5 rounded ${connectionBadge(i.state)}`}>
+                  {i.state.replace('_', ' ').toLowerCase()}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">{i.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* LIVE MARKET PERFORMANCE — real leads only */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          Live market performance{' '}
+          <span className="text-sm font-normal text-gray-400">(all markets, measured leads)</span>
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+          <div className="border border-gray-200 rounded-lg p-3 bg-white">
+            <div className="text-lg font-bold text-gray-900">{perf.totalLeads}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Total leads</div>
+            <div className="text-[10px] uppercase mt-1 font-medium text-green-700">MEASURED</div>
+          </div>
+          <Metric label="Contact rate" m={perf.conversion.contactRate} unit="%" />
+          <Metric label="Quote rate" m={perf.conversion.quoteRate} unit="%" />
+          <Metric label="Win rate" m={perf.conversion.winRate} unit="%" />
+          <Metric label="Avg time-to-contact" m={perf.timeToContact} unit="h" />
+          <Metric label="Revenue" m={perf.revenue} />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <p className="text-xs font-medium text-gray-500 mb-2">Leads by city</p>
+            {perf.byCity.length === 0 ? (
+              <p className="text-sm text-gray-400">No leads yet.</p>
+            ) : (
+              <ul className="text-sm text-gray-700 space-y-1">
+                {perf.byCity.map((d) => (
+                  <li key={d.identifier} className="flex justify-between">
+                    <span>
+                      {d.identifier}
+                      {!d.mapped && (
+                        <span className="ml-2 text-[10px] uppercase text-amber-700">unmapped</span>
+                      )}
+                    </span>
+                    <span className="font-medium">{d.leads}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <p className="text-xs font-medium text-gray-500 mb-2">Attribution health</p>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li className="flex justify-between">
+                <span>Unattributed leads</span>
+                <span className="font-medium">{perf.unattributedLeads}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>City slug, no intel market</span>
+                <span className="font-medium">{perf.unmappedCityLeads}</span>
+              </li>
+              <li className="flex justify-between">
+                <span>Niche slug, no intel niche</span>
+                <span className="font-medium">{perf.unmappedNicheLeads}</span>
+              </li>
+              <li className="flex justify-between text-gray-400">
+                <span>Qualified leads</span>
+                <span className="font-medium">UNKNOWN (no schema field)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* PAGE PERFORMANCE — SEO registry × real lead outcomes */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          Page performance{' '}
+          <span className="text-sm font-normal text-gray-400">
+            ({pages.length} published pages · {pagesWithLeads.length} with leads)
+          </span>
+        </h2>
+        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-xs text-gray-500">
+              <tr>
+                <th className="text-left px-3 py-2 font-medium">Page</th>
+                <th className="text-left px-3 py-2 font-medium">Type</th>
+                <th className="text-right px-3 py-2 font-medium">Leads</th>
+                <th className="text-right px-3 py-2 font-medium">Won</th>
+                <th className="text-right px-3 py-2 font-medium">Recs</th>
+                <th className="text-right px-3 py-2 font-medium">Exp</th>
+                <th className="text-left px-3 py-2 font-medium">Search</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {pages.slice(0, 30).map((p) => (
+                <tr key={p.slug}>
+                  <td className="px-3 py-2 text-gray-800">{p.path}</td>
+                  <td className="px-3 py-2 text-gray-500 text-xs">{p.pageType}</td>
+                  <td className="px-3 py-2 text-right font-medium">{p.leads}</td>
+                  <td className="px-3 py-2 text-right">{p.won}</td>
+                  <td className="px-3 py-2 text-right">{p.recommendationCount}</td>
+                  <td className="px-3 py-2 text-right">{p.experimentCount}</td>
+                  <td className="px-3 py-2">
+                    <span className={`text-[10px] px-2 py-0.5 rounded ${connectionBadge(p.search.status)}`}>
+                      {p.search.status === 'CONNECTED' ? 'GSC' : 'no GSC'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* GROWTH SIGNALS — deterministic, threshold-based */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          Growth signals <span className="text-sm font-normal text-gray-400">({signals.length} open)</span>
+        </h2>
+        {signals.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No open signals. Signals fire from measured thresholds; those needing Search Console / GA4 are
+            suppressed until connected (never fabricated).
+          </p>
+        ) : (
+          <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 bg-white">
+            {signals.map((s) => (
+              <div key={s.id} className="px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-gray-900 text-sm">
+                    {s.signal_type} <span className="text-gray-400">→</span> {s.target}
+                  </span>
+                  <div className="flex items-center gap-2 text-xs shrink-0">
+                    <span className={`px-2 py-0.5 rounded ${severityBadge(s.severity)}`}>{s.severity}</span>
+                    <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600">{s.data_quality}</span>
+                    {s.confidence != null && (
+                      <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600">{s.confidence}%</span>
+                    )}
+                  </div>
+                </div>
+                {s.measured && (
+                  <p className="text-xs text-gray-500 mt-1 font-mono break-all">
+                    measured: {s.measured} · threshold: {s.threshold}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Where should we test next — top scored opportunities with the WHY */}
@@ -248,6 +455,38 @@ export default async function IntelligencePage() {
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-1">{r.reason}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* RECENT ACTIVITY — the operational event stream (Slack-ready facts) */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Recent activity</h2>
+        {activity.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No activity recorded yet. Discovering, scoring, transitioning, detecting signals, and creating
+            recommendations all append durable events here (and, later, to Slack).
+          </p>
+        ) : (
+          <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 bg-white">
+            {activity.map((e) => (
+              <div key={e.id} className="px-4 py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-gray-900">
+                    <span className="text-xs font-mono text-gray-400 mr-2">{e.event_type}</span>
+                    {e.title}
+                  </span>
+                  <div className="flex items-center gap-2 text-xs shrink-0">
+                    {e.actor_name && (
+                      <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600">{e.actor_name}</span>
+                    )}
+                    <span className={`px-2 py-0.5 rounded ${severityBadge(e.severity)}`}>{e.severity}</span>
+                    <span className="text-gray-400">{e.created_at.slice(0, 16).replace('T', ' ')}</span>
+                  </div>
+                </div>
+                {e.summary && <p className="text-xs text-gray-500 mt-0.5">{e.summary}</p>}
               </div>
             ))}
           </div>

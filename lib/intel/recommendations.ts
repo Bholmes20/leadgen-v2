@@ -13,6 +13,7 @@ import {
   type Priority,
 } from "./types";
 import { assertApproval, logDecision } from "./permissions";
+import { safeRecordActivity } from "./activity";
 
 export interface RecommendationInput {
   type: RecommendationType;
@@ -77,6 +78,21 @@ export function createRecommendation(input: RecommendationInput): Recommendation
     input.est_cost ?? null,
     dedup,
   );
+
+  // Canonical creation point → single RECOMMENDATION_CREATED event (best-effort).
+  safeRecordActivity({
+    event_type: "RECOMMENDATION_CREATED",
+    actor_type: "system",
+    actor_name: "growth-engine",
+    target_type: "recommendation",
+    target_id: id,
+    recommendation_id: id,
+    title: `${input.type} → ${input.target}`,
+    summary: input.reason,
+    metadata: { priority: input.priority ?? "medium", dedup_key: dedup },
+    severity: "info",
+  });
+
   return getRecommendation(id)!;
 }
 
@@ -127,6 +143,19 @@ export function approveRecommendation(id: string, approvedBy: string, rationale?
     rationale: rationale ?? null,
   });
 
+  safeRecordActivity({
+    event_type: "RECOMMENDATION_APPROVED",
+    actor_type: "human",
+    actor_name: approvedBy,
+    target_type: "recommendation",
+    target_id: id,
+    recommendation_id: id,
+    title: `Approved: ${rec.type} → ${rec.target}`,
+    summary: rationale ?? null,
+    metadata: { fromStatus: rec.status },
+    severity: "notice",
+  });
+
   return getRecommendation(id)!;
 }
 
@@ -147,6 +176,19 @@ export function updateRecommendationStatus(
     toState: status,
     permissionLevel: "READ",
   });
+  if (status === "REJECTED") {
+    safeRecordActivity({
+      event_type: "RECOMMENDATION_REJECTED",
+      actor_type: actor === "system" ? "system" : "human",
+      actor_name: actor,
+      target_type: "recommendation",
+      target_id: id,
+      recommendation_id: id,
+      title: `Rejected: ${rec.type} → ${rec.target}`,
+      metadata: { fromStatus: rec.status },
+      severity: "notice",
+    });
+  }
   return getRecommendation(id)!;
 }
 

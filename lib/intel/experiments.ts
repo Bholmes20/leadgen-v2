@@ -15,6 +15,7 @@ import type {
   PerformanceSource,
 } from "./types";
 import { getOpportunity } from "./opportunities";
+import { safeRecordActivity } from "./activity";
 
 export interface ExperimentInput {
   opportunity_id: string;
@@ -47,6 +48,24 @@ export function createExperiment(input: ExperimentInput): Experiment {
     input.landing_pages ? JSON.stringify(input.landing_pages) : null,
     input.status ?? "PLANNED",
   );
+
+  const opp = getOpportunity(input.opportunity_id);
+  safeRecordActivity({
+    event_type: "EXPERIMENT_CREATED",
+    actor_type: "system",
+    actor_name: "growth-engine",
+    target_type: "experiment",
+    target_id: id,
+    experiment_id: id,
+    opportunity_id: input.opportunity_id,
+    market_id: opp?.market_id ?? null,
+    niche_id: opp?.niche_id ?? null,
+    title: `Experiment planned (${input.channel})`,
+    summary: input.hypothesis,
+    metadata: { channel: input.channel, test_budget: input.test_budget ?? null },
+    severity: "info",
+  });
+
   return getExperiment(id)!;
 }
 
@@ -76,6 +95,26 @@ export function updateExperimentStatus(
   ).run(status, outcome ?? null, lessons ?? null, id);
   const exp = getExperiment(id);
   if (!exp) throw new Error(`Unknown experiment: ${id}`);
+
+  if (status === "RUNNING" || status === "COMPLETED") {
+    const opp = getOpportunity(exp.opportunity_id);
+    safeRecordActivity({
+      event_type: status === "RUNNING" ? "EXPERIMENT_STARTED" : "EXPERIMENT_COMPLETED",
+      actor_type: "system",
+      actor_name: "growth-engine",
+      target_type: "experiment",
+      target_id: id,
+      experiment_id: id,
+      opportunity_id: exp.opportunity_id,
+      market_id: opp?.market_id ?? null,
+      niche_id: opp?.niche_id ?? null,
+      title: status === "RUNNING" ? "Experiment started" : "Experiment completed",
+      summary: outcome ?? exp.hypothesis,
+      metadata: { status },
+      severity: "info",
+    });
+  }
+
   return exp;
 }
 

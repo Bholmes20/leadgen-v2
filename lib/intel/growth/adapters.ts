@@ -10,12 +10,34 @@
 // tables, so the Growth Engine has genuine lead-side signal from day one.
 
 import db from "../../db";
-import type { PerformanceSource } from "../types";
+import type { ConnectionState, PerformanceSource } from "../types";
 
 export interface AdapterStatus {
   source: PerformanceSource;
   available: boolean;
   reason: string; // human-readable: why it's (un)available
+}
+
+// Richer, dimensional row shape a real Search Console pull will return. Mirrors
+// the GSC Search Analytics API: one row per date × page × query × country ×
+// device with clicks/impressions/ctr/position. Stored in intel_search_metrics.
+export interface SearchAnalyticsRow {
+  date: string; // YYYY-MM-DD
+  page?: string | null;
+  query?: string | null;
+  country?: string | null;
+  device?: string | null;
+  clicks?: number | null;
+  impressions?: number | null;
+  ctr?: number | null;
+  position?: number | null;
+}
+
+export interface SearchAnalyticsQuery {
+  startDate: string; // inclusive YYYY-MM-DD
+  endDate: string; // inclusive YYYY-MM-DD
+  dimensions?: Array<"date" | "page" | "query" | "country" | "device">;
+  rowLimit?: number;
 }
 
 export interface PageStat {
@@ -43,11 +65,35 @@ function envSet(...keys: string[]): boolean {
   });
 }
 
-// ── Google Search Console (deferred — interface only) ────────────────────────
-export const searchConsoleAdapter: PerformanceAdapter = {
+// ── Google Search Console (clean boundary — not yet authenticated) ───────────
+// The interface below is the full contract a real GSC client will satisfy.
+// Until GSC_SITE_URL + GOOGLE_SERVICE_ACCOUNT_JSON are configured, isAvailable()
+// is false and every fetch returns nothing — the report/UI show NOT_CONNECTED
+// rather than inventing numbers. Credentials are never logged or exposed.
+//
+// Required to connect later:
+//   • GSC_SITE_URL               — the verified property (e.g. sc-domain:eseeent.com)
+//   • GOOGLE_SERVICE_ACCOUNT_JSON — a service account with GSC read access, added
+//                                   as a user on the property.
+export interface SearchConsoleAdapter extends PerformanceAdapter {
+  /** The configured property/site identifier, or null when not connected. */
+  property(): string | null;
+  connectionState(): ConnectionState;
+  /** Dimensional Search Analytics pull. Returns [] until authenticated. */
+  fetchSearchAnalytics(query: SearchAnalyticsQuery): Promise<SearchAnalyticsRow[]>;
+}
+
+export const searchConsoleAdapter: SearchConsoleAdapter = {
   source: "gsc",
   isAvailable() {
     return envSet("GSC_SITE_URL", "GOOGLE_SERVICE_ACCOUNT_JSON");
+  },
+  property() {
+    const p = process.env.GSC_SITE_URL;
+    return typeof p === "string" && p.trim().length > 0 ? p.trim() : null;
+  },
+  connectionState() {
+    return this.isAvailable() ? "CONNECTED" : "NOT_CONNECTED";
   },
   status() {
     return {
@@ -58,8 +104,12 @@ export const searchConsoleAdapter: PerformanceAdapter = {
         : "Not connected — set GSC_SITE_URL + GOOGLE_SERVICE_ACCOUNT_JSON",
     };
   },
+  async fetchSearchAnalytics() {
+    // Deferred: no real API client wired yet. NEVER returns fabricated rows.
+    return [];
+  },
   async fetchPageStats() {
-    // Deferred to P1B. Intentionally returns nothing until wired to the real API.
+    // Intentionally returns nothing until wired to the real API.
     return [];
   },
 };

@@ -196,5 +196,106 @@ export function ensureIntelSchema(db: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_intel_performance_scope
       ON intel_performance (scope, identifier, source, as_of);
+
+    -- ─── Activity / event audit layer (P1B) ─────────────────────────────────
+    -- A durable, generic operational event stream. Meant to be consumed later by
+    -- the company-level Alfred/James Slack command center — NOT a Lead-Gen Slack
+    -- bot. Records operational FACTS and concise explanations only; never private
+    -- chain-of-thought or hidden reasoning.
+    CREATE TABLE IF NOT EXISTS intel_activity_events (
+      id                TEXT PRIMARY KEY,
+      created_at        TEXT NOT NULL DEFAULT (datetime('now')),
+      event_type        TEXT NOT NULL,                       -- e.g. SIGNAL_DETECTED
+      actor_type        TEXT NOT NULL DEFAULT 'system',      -- system | worker | human
+      actor_name        TEXT,                                -- worker id / person / 'growth-engine'
+      system            TEXT NOT NULL DEFAULT 'growth-intelligence',
+      target_type       TEXT,                                -- opportunity | recommendation | page | market | signal | ingestion
+      target_id         TEXT,
+      market_id         TEXT,
+      niche_id          TEXT,
+      opportunity_id    TEXT,
+      recommendation_id TEXT,
+      experiment_id     TEXT,
+      signal_id         TEXT,
+      title             TEXT NOT NULL,                       -- one-line, Slack-renderable
+      summary           TEXT,                                -- concise explanation (facts only)
+      metadata          TEXT,                                -- JSON structured payload
+      severity          TEXT NOT NULL DEFAULT 'info',        -- info | notice | warning | critical
+      correlation_id    TEXT                                 -- task/run id to group related events
+    );
+    CREATE INDEX IF NOT EXISTS idx_intel_activity_created
+      ON intel_activity_events (created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_intel_activity_target
+      ON intel_activity_events (target_type, target_id);
+    CREATE INDEX IF NOT EXISTS idx_intel_activity_market
+      ON intel_activity_events (market_id);
+
+    -- ─── Deterministic growth signals (P1B) ─────────────────────────────────
+    -- A signal is a threshold-crossing observation, NOT an action. Every signal
+    -- records the measured values and the exact threshold that produced it, so it
+    -- is fully explainable. Signals are only created when the required data
+    -- actually exists; otherwise an INSUFFICIENT_DATA signal (or nothing) is used.
+    CREATE TABLE IF NOT EXISTS intel_signals (
+      id                        TEXT PRIMARY KEY,
+      created_at                TEXT NOT NULL DEFAULT (datetime('now')),
+      signal_type               TEXT NOT NULL,               -- HIGH_IMPRESSIONS_LOW_CTR, …
+      scope                     TEXT NOT NULL,               -- page | market | niche | attribution | system
+      target                    TEXT NOT NULL,               -- identifier (page slug, market slug, …)
+      market_id                 TEXT,
+      niche_id                  TEXT,
+      severity                  TEXT NOT NULL DEFAULT 'info',
+      confidence                INTEGER,                     -- 0-100
+      data_quality              TEXT NOT NULL DEFAULT 'MEASURED', -- MEASURED | DERIVED | ESTIMATED | UNKNOWN
+      period_start              TEXT,
+      period_end                TEXT,
+      comparison_period_start   TEXT,
+      comparison_period_end     TEXT,
+      measured                  TEXT,                        -- JSON: the observed values
+      threshold                 TEXT,                        -- JSON: the threshold(s) applied
+      evidence                  TEXT,                        -- JSON: supporting context
+      status                    TEXT NOT NULL DEFAULT 'OPEN',-- OPEN | ACKNOWLEDGED | RESOLVED
+      dedup_key                 TEXT UNIQUE                  -- stable identity so re-eval upserts
+    );
+    CREATE INDEX IF NOT EXISTS idx_intel_signals_type
+      ON intel_signals (signal_type, target);
+
+    -- ─── Search Console dimensional store (P1B — incremental ingestion) ──────
+    -- Empty until GSC is authenticated. NEVER seeded with fake data. Designed for
+    -- incremental ingestion: one row per (property, date, page, query, country,
+    -- device). Provenance = source + property + fetched_at.
+    CREATE TABLE IF NOT EXISTS intel_search_metrics (
+      id           TEXT PRIMARY KEY,
+      created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+      source       TEXT NOT NULL DEFAULT 'gsc',
+      property     TEXT NOT NULL,                            -- site identifier (e.g. sc-domain:… or URL)
+      date         TEXT NOT NULL,                            -- YYYY-MM-DD
+      page         TEXT,
+      query        TEXT,
+      country      TEXT,
+      device       TEXT,
+      clicks       INTEGER,
+      impressions  INTEGER,
+      ctr          REAL,
+      position     REAL,
+      fetched_at   TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE (property, date, page, query, country, device)
+    );
+    CREATE INDEX IF NOT EXISTS idx_intel_search_metrics_prop_date
+      ON intel_search_metrics (property, date);
+    CREATE INDEX IF NOT EXISTS idx_intel_search_metrics_page
+      ON intel_search_metrics (page, date);
+
+    -- ─── Ingestion cursor (incremental design, provenance) ──────────────────
+    CREATE TABLE IF NOT EXISTS intel_ingestion_state (
+      id                 TEXT PRIMARY KEY,
+      source             TEXT NOT NULL,                      -- gsc | ga4 | google_ads
+      property           TEXT NOT NULL,
+      last_ingested_date TEXT,                               -- high-water mark for incremental pulls
+      last_run_at        TEXT,
+      last_status        TEXT,                               -- SUCCESS | FAILED | NOT_CONNECTED
+      last_error         TEXT,
+      rows_ingested      INTEGER NOT NULL DEFAULT 0,
+      UNIQUE (source, property)
+    );
   `);
 }

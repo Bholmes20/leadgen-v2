@@ -86,7 +86,106 @@ export {
   type MarketPerformance,
   type GrowthAnalysis,
 } from "./growth";
-export { integrationStatus, ALL_ADAPTERS, type AdapterStatus } from "./growth/adapters";
+export {
+  integrationStatus,
+  ALL_ADAPTERS,
+  searchConsoleAdapter,
+  ga4Adapter,
+  googleAdsAdapter,
+  leadsAdapter,
+  type AdapterStatus,
+  type SearchConsoleAdapter,
+  type SearchAnalyticsRow,
+  type SearchAnalyticsQuery,
+} from "./growth/adapters";
 
 // Reporting
 export { buildWeeklyReport, type GrowthReport, type BuiltReport } from "./report";
+
+// ── P1B — Real growth intelligence + activity foundation ─────────────────────
+
+// Lead-performance aggregation (real leads; honest UNKNOWN/UNAVAILABLE)
+export {
+  getLeadPerformance,
+  STATUS_BUCKETS,
+  type LeadPerformance,
+  type LeadPerformanceFilter,
+  type MetricValue,
+  type Distribution,
+} from "./growth/performance";
+
+// Page-performance model (SEO-registry driven; reusable beyond Augusta)
+export {
+  buildPagePerformance,
+  getPagePerformanceBySlug,
+  type PagePerformanceRow,
+  type PageType,
+  type PageSearchMetrics,
+} from "./growth/pageModel";
+
+// Search Console ingestion pipeline (incremental; NOT_CONNECTED today)
+export {
+  ingestSearchConsole,
+  upsertSearchMetrics,
+  getIngestionState,
+  setIngestionState,
+  type IngestResult,
+} from "./growth/searchConsole";
+
+// Deterministic growth signals + signal→recommendation generation
+export {
+  GROWTH_SIGNAL_THRESHOLDS,
+  evaluateGrowthSignals,
+  generateRecommendationsFromSignals,
+  recordSignal,
+  listSignals,
+  getSignal,
+  type SignalInput,
+  type SignalEvaluation,
+  type RecommendationGeneration,
+} from "./growth/signals";
+
+// Lead ↔ page ↔ market ↔ niche mapping
+export {
+  mapLead,
+  resolveMarket,
+  resolveNiche,
+  marketBySeoSlug,
+  nicheBySlug,
+  normalizeSlug,
+  UNATTRIBUTED,
+  UNMAPPED,
+  type MappedLead,
+  type MarketRef,
+  type NicheRef,
+} from "./mapping";
+
+// Activity / event audit layer
+export {
+  recordActivity,
+  safeRecordActivity,
+  getActivityEvent,
+  listRecentActivity,
+  listActivityForMarket,
+  listActivityForOpportunity,
+  listActivityForRecommendation,
+  listActivityForExperiment,
+  type ActivityInput,
+} from "./activity";
+
+// System status
+export { getSystemStatus, type SystemStatus, type IntegrationStatusLine } from "./status";
+
+// Worker-facing read facade
+export {
+  getSystemStatusForWorker,
+  getMarketPerformance as getMarketPerformanceForWorker,
+  getPagePerformance as getPagePerformanceForWorker,
+  getGrowthSignals,
+  getRecommendations,
+  getRecentActivity,
+  getTopOpportunities,
+  getOpportunityEvidence,
+  generateGrowthRecommendations as generateGrowthRecommendationsFromSignals,
+  type GrowthGenerationResult,
+} from "./worker";

@@ -19,6 +19,7 @@ import { resolveFactors } from "./evidence";
 import { getMarket } from "./markets";
 import { getNiche } from "./niches";
 import { assertApproval, logDecision, type ApprovalContext } from "./permissions";
+import { safeRecordActivity } from "./activity";
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -41,6 +42,21 @@ export function discoverOpportunity(marketId: string, nicheId: string): Opportun
   db.prepare(
     "INSERT INTO intel_opportunities (id, market_id, niche_id, stage) VALUES (?, ?, ?, 'DISCOVERED')",
   ).run(id, marketId, nicheId);
+
+  safeRecordActivity({
+    event_type: "OPPORTUNITY_DISCOVERED",
+    actor_type: "system",
+    actor_name: "opportunity-engine",
+    target_type: "opportunity",
+    target_id: id,
+    opportunity_id: id,
+    market_id: marketId,
+    niche_id: nicheId,
+    title: "Opportunity discovered",
+    summary: "A market × niche pair entered the pipeline (DISCOVERED).",
+    severity: "info",
+  });
+
   return getOpportunity(id)!;
 }
 
@@ -124,6 +140,21 @@ export function scoreOpportunityById(id: string, asOf?: string): ScoreResult {
     id,
   );
 
+  safeRecordActivity({
+    event_type: "OPPORTUNITY_SCORED",
+    actor_type: "system",
+    actor_name: "scoring-engine",
+    target_type: "opportunity",
+    target_id: id,
+    opportunity_id: id,
+    market_id: opp.market_id,
+    niche_id: opp.niche_id,
+    title: `Opportunity scored: ${result.overall ?? "n/a"}/100`,
+    summary: `Verdict ${result.verdict}, ${result.confidenceLabel} confidence.`,
+    metadata: { overall: result.overall, verdict: result.verdict, confidence: result.confidence },
+    severity: "info",
+  });
+
   return result;
 }
 
@@ -177,6 +208,23 @@ export function transitionOpportunity(
     toState: to,
     permissionLevel: level,
     rationale: opts.rationale ?? null,
+  });
+
+  const eventType =
+    to === "VALIDATED" ? "MARKET_VALIDATED" : to === "PAUSED" ? "MARKET_PAUSED" : "OPPORTUNITY_TRANSITIONED";
+  safeRecordActivity({
+    event_type: eventType,
+    actor_type: opts.approvedBy ? "human" : "system",
+    actor_name: opts.actor,
+    target_type: "opportunity",
+    target_id: id,
+    opportunity_id: id,
+    market_id: opp.market_id,
+    niche_id: opp.niche_id,
+    title: `${opp.stage} → ${to}`,
+    summary: opts.rationale ?? null,
+    metadata: { from: opp.stage, to, approvedBy: opts.approvedBy ?? null, permissionLevel: level },
+    severity: to === "REJECTED" ? "notice" : "info",
   });
 
   return getOpportunity(id)!;

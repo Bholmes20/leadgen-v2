@@ -106,6 +106,8 @@ export const RECOMMENDATION_TYPES = [
   "REVIEW_PRICING",
   "REVIEW_PROVIDER_CAPACITY",
   "REFACTOR_FOR_REPLICATION", // tracks the Augusta-hardcoding blockers from the audit
+  "FIX_ATTRIBUTION", // P1B: unmapped/unattributed leads need attribution wiring fixed
+  "INVESTIGATE_PAGE", // P1B: a page losing visibility / underperforming needs a look
 ] as const;
 export type RecommendationType = (typeof RECOMMENDATION_TYPES)[number];
 
@@ -343,4 +345,144 @@ export interface PerformanceSnapshot {
   sessions: number | null;
   conversions: number | null;
   cost: number | null; // cents
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P1B — Data-quality labels
+//
+// Every derived metric or signal is tagged so a reader (or worker, or Slack card)
+// always knows whether a number was MEASURED, DERIVED from measured inputs,
+// ESTIMATED, or is simply UNKNOWN/unavailable. This is the no-fake-data guardrail
+// applied to analytics, mirroring the evidence `kind` model applied to research.
+// ─────────────────────────────────────────────────────────────────────────────
+export const DATA_QUALITIES = ["MEASURED", "DERIVED", "ESTIMATED", "UNKNOWN"] as const;
+export type DataQuality = (typeof DATA_QUALITIES)[number];
+
+// Integration/connection state used by getSystemStatus and adapters.
+export const CONNECTION_STATES = ["CONNECTED", "NOT_CONNECTED", "UNAVAILABLE"] as const;
+export type ConnectionState = (typeof CONNECTION_STATES)[number];
+
+// ─── Activity / event audit layer ────────────────────────────────────────────
+// A generic, durable operational event stream. Consumed later by the company
+// Alfred/James Slack command center. Facts and concise explanations only.
+export const ACTIVITY_EVENT_TYPES = [
+  "OPPORTUNITY_DISCOVERED",
+  "RESEARCH_STARTED",
+  "EVIDENCE_RECORDED",
+  "OPPORTUNITY_SCORED",
+  "OPPORTUNITY_TRANSITIONED",
+  "SIGNAL_DETECTED",
+  "RECOMMENDATION_CREATED",
+  "RECOMMENDATION_APPROVED",
+  "RECOMMENDATION_REJECTED",
+  "EXPERIMENT_CREATED",
+  "EXPERIMENT_STARTED",
+  "EXPERIMENT_COMPLETED",
+  "MARKET_VALIDATED",
+  "MARKET_PAUSED",
+  "SEO_PERFORMANCE_CHANGED",
+  "DATA_INGESTION_COMPLETED",
+  "DATA_INGESTION_FAILED",
+  "APPROVAL_REQUIRED",
+] as const;
+export type ActivityEventType = (typeof ACTIVITY_EVENT_TYPES)[number];
+
+export const ACTOR_TYPES = ["system", "worker", "human"] as const;
+export type ActorType = (typeof ACTOR_TYPES)[number];
+
+export const EVENT_SEVERITIES = ["info", "notice", "warning", "critical"] as const;
+export type EventSeverity = (typeof EVENT_SEVERITIES)[number];
+
+export interface ActivityEvent {
+  id: string;
+  created_at: string;
+  event_type: ActivityEventType;
+  actor_type: ActorType;
+  actor_name: string | null;
+  system: string;
+  target_type: string | null;
+  target_id: string | null;
+  market_id: string | null;
+  niche_id: string | null;
+  opportunity_id: string | null;
+  recommendation_id: string | null;
+  experiment_id: string | null;
+  signal_id: string | null;
+  title: string;
+  summary: string | null;
+  metadata: string | null; // JSON
+  severity: EventSeverity;
+  correlation_id: string | null;
+}
+
+// ─── Deterministic growth signals ────────────────────────────────────────────
+export const SIGNAL_TYPES = [
+  "HIGH_IMPRESSIONS_LOW_CTR",
+  "COMMERCIAL_QUERY_POSITION_5_15",
+  "TRAFFIC_WITH_LOW_LEAD_CONVERSION",
+  "LOW_TRAFFIC_HIGH_LEAD_QUALITY",
+  "PAGE_GAINING_VISIBILITY",
+  "PAGE_LOSING_VISIBILITY",
+  "HIGH_LEAD_VOLUME_POOR_OUTCOME",
+  "HIGH_CONVERSION_LOW_TRAFFIC",
+  "UNMAPPED_LEAD_ATTRIBUTION",
+  "INSUFFICIENT_DATA",
+] as const;
+export type SignalType = (typeof SIGNAL_TYPES)[number];
+
+export const SIGNAL_SCOPES = ["page", "market", "niche", "attribution", "system"] as const;
+export type SignalScope = (typeof SIGNAL_SCOPES)[number];
+
+export const SIGNAL_STATUSES = ["OPEN", "ACKNOWLEDGED", "RESOLVED"] as const;
+export type SignalStatus = (typeof SIGNAL_STATUSES)[number];
+
+export interface Signal {
+  id: string;
+  created_at: string;
+  signal_type: SignalType;
+  scope: SignalScope;
+  target: string;
+  market_id: string | null;
+  niche_id: string | null;
+  severity: EventSeverity;
+  confidence: number | null;
+  data_quality: DataQuality;
+  period_start: string | null;
+  period_end: string | null;
+  comparison_period_start: string | null;
+  comparison_period_end: string | null;
+  measured: string | null; // JSON
+  threshold: string | null; // JSON
+  evidence: string | null; // JSON
+  status: SignalStatus;
+  dedup_key: string | null;
+}
+
+// ─── Search Console dimensional store + ingestion cursor ─────────────────────
+export interface SearchMetricRow {
+  id: string;
+  created_at: string;
+  source: string;
+  property: string;
+  date: string;
+  page: string | null;
+  query: string | null;
+  country: string | null;
+  device: string | null;
+  clicks: number | null;
+  impressions: number | null;
+  ctr: number | null;
+  position: number | null;
+  fetched_at: string;
+}
+
+export interface IngestionState {
+  id: string;
+  source: string;
+  property: string;
+  last_ingested_date: string | null;
+  last_run_at: string | null;
+  last_status: string | null;
+  last_error: string | null;
+  rows_ingested: number;
 }
