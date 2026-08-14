@@ -189,3 +189,95 @@ export {
   generateGrowthRecommendations as generateGrowthRecommendationsFromSignals,
   type GrowthGenerationResult,
 } from "./worker";
+
+// ── P1C — External SEO + Opportunity Research Intelligence ───────────────────
+
+// Real Google Search Console client (zero-dep; NOT_CONNECTED until creds set)
+export { loadServiceAccount, hasGscCredentials, type ServiceAccount } from "./growth/gscClient";
+
+// Ingestion extras (ingestSearchConsole already exported above)
+export { backfillSearchConsole, ingestSearchConsoleRange, type IngestOptions } from "./growth/searchConsole";
+
+// SEO analytics + comparison windows
+export {
+  getSeoPerformance,
+  getSeoConnection,
+  getTopPages,
+  getTopQueries,
+  comparePeriods,
+  comparisonWindows,
+  SEO_CONFIG,
+  SEO_COMPARISON,
+  pageSlugFromUrl,
+  type SeoPerformance,
+  type SeoTotals,
+  type SeoWindow,
+  type SeoRow,
+  type SeoPageRow,
+  type SeoQueryRow,
+  type ComparisonRow,
+} from "./growth/seoAnalytics";
+
+// Deterministic SEO signals
+export {
+  evaluateSeoSignals,
+  SEO_SIGNAL_THRESHOLDS,
+  ALL_SEO_SIGNALS,
+  type SeoSignalEvaluation,
+} from "./growth/seoSignals";
+
+// Evidence freshness policy
+export {
+  FRESHNESS_DAYS,
+  DEFAULT_FRESHNESS_DAYS,
+  freshnessDaysFor,
+  defaultFreshUntil,
+  evidenceFreshness,
+  type FreshnessState,
+  type FactorFreshness,
+  type EvidenceFreshness,
+} from "./freshness";
+
+// Research pipeline (task lifecycle + evidence intake)
+export {
+  createResearchTask,
+  getResearchTask,
+  getResearchTaskByOpportunity,
+  getResearchQueue,
+  updateResearchTaskStatus,
+  recordResearchEvidence,
+  completeResearchDimension,
+  missingDimensions,
+  type CreateResearchTaskInput,
+  type ResearchEvidenceInput,
+} from "./research";
+
+// Opportunity Scoring V2 (score & evidence-confidence kept separate)
+export {
+  analyzeOpportunity,
+  RESEARCH_COMPLETE_MIN_CONFIDENCE,
+  type OpportunityAnalysis,
+  type DimensionAnalysis,
+} from "./scoringV2";
+
+// Opportunity Report #1 (ranked) + per-opportunity explanation
+export {
+  generateOpportunityReport,
+  getOpportunityReport as getOpportunityReportRaw,
+  type OpportunityReport,
+  type OpportunityReportRow,
+  type ReportOptions,
+  type OpportunityExplanation,
+  type OpportunityEvidenceItem,
+} from "./opportunityReport";
+
+// Worker-only SEO/research entrypoints
+export {
+  getSeoSignals,
+  getSeoRecommendations,
+  runSeoAnalysis,
+  runGscIngestion,
+  getSEOInsights,
+  getOpportunityReport,
+  type SeoInsights,
+} from "./worker";

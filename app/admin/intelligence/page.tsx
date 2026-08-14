@@ -17,6 +17,12 @@ import {
   buildPagePerformance,
   listSignals,
   listRecentActivity,
+  getSeoPerformance,
+  getTopQueries,
+  getTopPages,
+  getResearchQueue,
+  analyzeOpportunity,
+  getOpportunityReport,
   SCORE_COMPONENTS,
   type OpportunityWithContext,
   type ScoreComponent,
@@ -120,6 +126,16 @@ function Metric({ label, m, unit }: { label: string; m: MetricValue; unit?: stri
   )
 }
 
+function SeoStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-gray-200 rounded-lg p-3 bg-white">
+      <div className="text-lg font-bold text-gray-900">{value}</div>
+      <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+      <div className="text-[10px] uppercase mt-1 font-medium text-green-700">MEASURED</div>
+    </div>
+  )
+}
+
 function ComponentBars({ opp }: { opp: OpportunityWithContext }) {
   const components = parseComponents(opp)
   if (!components) return <p className="text-sm text-gray-400">Not scored yet.</p>
@@ -203,6 +219,28 @@ export default async function IntelligencePage() {
   const activity = listRecentActivity(20)
 
   const pagesWithLeads = pages.filter((p) => p.leads > 0)
+
+  // P1C — Search Console + research (all read-only; analyzeOpportunity does not write).
+  const seo = getSeoPerformance(28)
+  const seoQueries = seo.hasData ? getTopQueries(28, 10) : []
+  const seoPages = seo.hasData ? getTopPages(28, 10) : []
+  const researchQueue = getResearchQueue()
+  const analyses = opportunities.map((o) => ({ o, a: analyzeOpportunity(o.id) }))
+  const researchReady = analyses.filter((x) => x.a.researchComplete).length
+  const freshAgg = analyses.reduce(
+    (acc, x) => ({
+      fresh: acc.fresh + x.a.freshFactors,
+      stale: acc.stale + x.a.staleFactors,
+      missing: acc.missing + x.a.missingFactors,
+    }),
+    { fresh: 0, stale: 0, missing: 0 },
+  )
+  const REPORT_MIN_READY = 15
+
+  // Per-opportunity evidence ("why are we considering X?") for the top scored
+  // candidate — structured facts only, never a reasoning trace.
+  const topScored = scored[0] ?? null
+  const topReport = topScored ? getOpportunityReport(topScored.id) : null
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
@@ -393,6 +431,123 @@ export default async function IntelligencePage() {
         )}
       </section>
 
+      {/* SEO PERFORMANCE — Search Console (honest connected state) */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          Search Console / SEO{' '}
+          <span className="text-sm font-normal text-gray-400">(last {seo.window.days} days)</span>
+        </h2>
+        <div className="border border-gray-200 rounded-lg p-4 bg-white mb-4">
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-gray-900 text-sm">Search Console</span>
+            <span className={`text-xs px-2 py-0.5 rounded ${connectionBadge(seo.connection)}`}>
+              {seo.connection.replace('_', ' ').toLowerCase()}
+            </span>
+          </div>
+          {seo.connection !== 'CONNECTED' ? (
+            <p className="text-xs text-gray-500 mt-2">
+              Connect Search Console to unlock impressions / clicks / CTR / position, comparison windows,
+              and SEO signals. Set <code className="bg-gray-100 px-1 rounded">GSC_SITE_URL</code> +{' '}
+              <code className="bg-gray-100 px-1 rounded">GOOGLE_SERVICE_ACCOUNT_JSON</code> (see
+              docs/intel/gsc-setup.md). No metrics are shown until real data exists.
+            </p>
+          ) : !seo.hasData ? (
+            <p className="text-xs text-gray-500 mt-2">Connected — no ingested rows in this window yet.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+              <SeoStat label="Impressions" value={seo.totals.impressions.toLocaleString()} />
+              <SeoStat label="Clicks" value={seo.totals.clicks.toLocaleString()} />
+              <SeoStat label="CTR" value={seo.totals.ctr != null ? `${(seo.totals.ctr * 100).toFixed(1)}%` : '—'} />
+              <SeoStat label="Avg position" value={seo.totals.position != null ? seo.totals.position.toFixed(1) : '—'} />
+            </div>
+          )}
+        </div>
+        {seo.hasData && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="border border-gray-200 rounded-lg p-4 bg-white">
+              <p className="text-xs font-medium text-gray-500 mb-2">Top search queries</p>
+              <ul className="text-sm text-gray-700 space-y-1">
+                {seoQueries.map((q) => (
+                  <li key={q.key} className="flex justify-between gap-2">
+                    <span className="truncate">
+                      {q.key}
+                      {q.branded ? <span className="ml-1 text-[10px] uppercase text-gray-400">brand</span> : null}
+                      {q.commercial ? <span className="ml-1 text-[10px] uppercase text-blue-600">commercial</span> : null}
+                    </span>
+                    <span className="font-medium shrink-0">{q.impressions} impr</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4 bg-white">
+              <p className="text-xs font-medium text-gray-500 mb-2">Top SEO pages</p>
+              <ul className="text-sm text-gray-700 space-y-1">
+                {seoPages.map((p) => (
+                  <li key={p.key} className="flex justify-between gap-2">
+                    <span className="truncate">{p.path}</span>
+                    <span className="font-medium shrink-0">{p.impressions} impr</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* OPPORTUNITY RESEARCH — queue, progress, freshness, report readiness */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Opportunity research</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="text-2xl font-bold text-gray-900">{researchQueue.length}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Research tasks</div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="text-2xl font-bold text-gray-900">{researchReady}<span className="text-sm text-gray-400">/{REPORT_MIN_READY}</span></div>
+            <div className="text-xs text-gray-500 mt-0.5">Ready for ranking</div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="text-2xl font-bold text-gray-900">{freshAgg.fresh}</div>
+            <div className="text-xs text-gray-500 mt-0.5">Fresh evidence</div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="text-2xl font-bold text-gray-900">{freshAgg.stale}<span className="text-sm text-gray-400"> / {freshAgg.missing} missing</span></div>
+            <div className="text-xs text-gray-500 mt-0.5">Stale evidence</div>
+          </div>
+        </div>
+        <div className="border border-dashed border-gray-300 rounded-lg p-4 mb-4">
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Opportunity Report #1:</span>{' '}
+            {researchReady >= REPORT_MIN_READY ? (
+              <span className="text-green-700">READY — {researchReady} opportunities researched.</span>
+            ) : (
+              <span className="text-amber-700">
+                RESEARCH INCOMPLETE — {researchReady}/{REPORT_MIN_READY} opportunities have complete, confident
+                research. No ranking is produced (fake precision avoided).
+              </span>
+            )}
+          </p>
+        </div>
+        {researchQueue.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No research tasks yet. Create tasks via the worker (<code className="bg-gray-100 px-1 rounded">createResearchTask</code>) to
+            begin evidence collection for CITY × NICHE opportunities.
+          </p>
+        ) : (
+          <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 bg-white">
+            {researchQueue.map((t) => (
+              <div key={t.id} className="px-4 py-2.5 flex items-center justify-between text-sm">
+                <span className="text-gray-800">{t.opportunity_id.slice(0, 8)} · {t.evidence_count} evidence</span>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600">{t.status}</span>
+                  {t.assigned_actor && <span className="text-gray-400">{t.assigned_actor}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* Where should we test next — top scored opportunities with the WHY */}
       <section>
         <h2 className="text-lg font-semibold text-gray-900 mb-3">
@@ -414,6 +569,92 @@ export default async function IntelligencePage() {
           </div>
         )}
       </section>
+
+      {/* OPPORTUNITY EVIDENCE — the "why are we considering X?" fact sheet */}
+      {topReport && (
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            Opportunity evidence{' '}
+            <span className="text-sm font-normal text-gray-400">
+              (why {topReport.market} · {topReport.niche})
+            </span>
+          </h2>
+          <div className="border border-gray-200 rounded-lg p-4 bg-white space-y-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-2xl font-bold text-gray-900 mr-2">
+                {topReport.opportunityScore ?? '—'}
+                <span className="text-sm text-gray-400">/100</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded ${confidenceBadge(topReport.evidenceConfidenceLabel)}`}>
+                {topReport.evidenceConfidenceLabel} confidence ({topReport.evidenceConfidence})
+              </span>
+              <span className={`px-2 py-0.5 rounded ${verdictBadge(topReport.verdict)}`}>{topReport.verdict}</span>
+              <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                research {topReport.researchComplete ? 'complete' : 'incomplete'}
+              </span>
+              <span className={`px-2 py-0.5 rounded ${connectionBadge(topReport.seo.connection)}`}>
+                SEO {topReport.seo.connection.replace('_', ' ').toLowerCase()}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                {topReport.leads.attributedLeads} attributed leads
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-1">
+                  Evidence <span className="text-gray-400">({topReport.evidence.length} observations)</span>
+                </p>
+                {topReport.evidence.length === 0 ? (
+                  <p className="text-sm text-gray-400">No evidence recorded yet.</p>
+                ) : (
+                  <ul className="text-xs text-gray-700 space-y-1">
+                    {topReport.evidence.slice(0, 8).map((e, i) => (
+                      <li key={i} className="flex justify-between gap-2">
+                        <span className="truncate">
+                          {e.factor_key}
+                          <span className="ml-1 text-[10px] uppercase text-gray-400">{e.kind}</span>
+                          {e.stale && <span className="ml-1 text-[10px] uppercase text-amber-700">stale</span>}
+                        </span>
+                        <span className="font-medium shrink-0">{e.value_num ?? e.value_text ?? '—'}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="text-[11px] text-gray-500 mt-2">
+                  Fresh {topReport.freshness.fresh} · Stale {topReport.freshness.stale} · Missing{' '}
+                  {topReport.freshness.missing}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-1">Why this ranks here</p>
+                {topReport.reasons.length === 0 ? (
+                  <p className="text-sm text-gray-400">Not enough evidence to explain a ranking yet.</p>
+                ) : (
+                  <ul className="list-disc list-inside text-sm text-gray-700 space-y-0.5">
+                    {topReport.reasons.map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                )}
+                {topReport.missingEvidence.length > 0 && (
+                  <p className="text-[11px] text-amber-700 mt-2">
+                    Missing/stale: {topReport.missingEvidence.slice(0, 8).join(', ')}
+                    {topReport.missingEvidence.length > 8 ? '…' : ''}
+                  </p>
+                )}
+                {topReport.activeSignals.length > 0 && (
+                  <p className="text-[11px] text-gray-500 mt-2">
+                    {topReport.activeSignals.length} active signal(s) ·{' '}
+                    {topReport.recommendations.length} proposed recommendation(s)
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Pipeline: unscored candidates */}
       {unscored.length > 0 && (

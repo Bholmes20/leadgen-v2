@@ -297,5 +297,32 @@ export function ensureIntelSchema(db: Database.Database): void {
       rows_ingested      INTEGER NOT NULL DEFAULT 0,
       UNIQUE (source, property)
     );
+
+    -- ─── Research tasks (P1C — reusable CITY × NICHE research lifecycle) ─────
+    -- One task per opportunity. Dimensions are the 6 scoring components. Raw
+    -- observations still live in intel_evidence (observation ≠ conclusion); this
+    -- table only tracks the research WORK: status, who, progress, blockers. Later
+    -- this is what James assigns to the Growth/Research Worker.
+    CREATE TABLE IF NOT EXISTS intel_research_tasks (
+      id                   TEXT PRIMARY KEY,
+      created_at           TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at           TEXT NOT NULL DEFAULT (datetime('now')),
+      opportunity_id       TEXT NOT NULL REFERENCES intel_opportunities(id),
+      market_id            TEXT,
+      niche_id             TEXT,
+      status               TEXT NOT NULL DEFAULT 'QUEUED',   -- QUEUED|IN_PROGRESS|BLOCKED|COMPLETE|STALE
+      assigned_actor       TEXT,
+      started_at           TEXT,
+      completed_at         TEXT,
+      dimensions           TEXT,                              -- JSON string[] requested
+      dimensions_completed TEXT,                              -- JSON string[] completed
+      evidence_count       INTEGER NOT NULL DEFAULT 0,
+      confidence           INTEGER,
+      blockers             TEXT,
+      notes                TEXT,
+      UNIQUE (opportunity_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_intel_research_status
+      ON intel_research_tasks (status);
   `);
 }

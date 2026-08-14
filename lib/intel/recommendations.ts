@@ -7,6 +7,7 @@
 import db from "../db";
 import { v4 as uuidv4 } from "uuid";
 import {
+  type ActivityEventType,
   type Recommendation,
   type RecommendationType,
   type RecommendationStatus,
@@ -27,6 +28,8 @@ export interface RecommendationInput {
   est_cost?: number | null; // cents
   // Stable identity so re-running a generator upserts instead of duplicating.
   dedup_key?: string | null;
+  // Activity event type emitted on first creation (default RECOMMENDATION_CREATED).
+  activity_event_type?: ActivityEventType;
 }
 
 /**
@@ -79,9 +82,9 @@ export function createRecommendation(input: RecommendationInput): Recommendation
     dedup,
   );
 
-  // Canonical creation point → single RECOMMENDATION_CREATED event (best-effort).
+  // Canonical creation point → single creation event (best-effort).
   safeRecordActivity({
-    event_type: "RECOMMENDATION_CREATED",
+    event_type: input.activity_event_type ?? "RECOMMENDATION_CREATED",
     actor_type: "system",
     actor_name: "growth-engine",
     target_type: "recommendation",

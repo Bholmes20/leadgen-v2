@@ -108,6 +108,15 @@ export const RECOMMENDATION_TYPES = [
   "REFACTOR_FOR_REPLICATION", // tracks the Augusta-hardcoding blockers from the audit
   "FIX_ATTRIBUTION", // P1B: unmapped/unattributed leads need attribution wiring fixed
   "INVESTIGATE_PAGE", // P1B: a page losing visibility / underperforming needs a look
+  // P1C — SEO recommendation vocabulary (all PROPOSED, never auto-applied)
+  "OPTIMIZE_PAGE_METADATA",
+  "IMPROVE_EXISTING_PAGE",
+  "EXPAND_INTERNAL_LINKING",
+  "IMPROVE_CRO",
+  "EXPAND_ACQUISITION",
+  "CREATE_SUPPORTING_CONTENT",
+  "CONSOLIDATE_OVERLAP",
+  "MONITOR_WINNER",
 ] as const;
 export type RecommendationType = (typeof RECOMMENDATION_TYPES)[number];
 
@@ -384,6 +393,18 @@ export const ACTIVITY_EVENT_TYPES = [
   "DATA_INGESTION_COMPLETED",
   "DATA_INGESTION_FAILED",
   "APPROVAL_REQUIRED",
+  // P1C — SEO ingestion, research lifecycle, ranking, reporting
+  "GSC_INGESTION_STARTED",
+  "GSC_INGESTION_COMPLETED",
+  "GSC_INGESTION_FAILED",
+  "SEO_SIGNAL_DETECTED",
+  "SEO_RECOMMENDATION_CREATED",
+  "RESEARCH_TASK_CREATED",
+  "RESEARCH_DIMENSION_COMPLETED",
+  "RESEARCH_COMPLETED",
+  "OPPORTUNITY_RESCORED",
+  "OPPORTUNITY_RANK_CHANGED",
+  "REPORT_GENERATED",
 ] as const;
 export type ActivityEventType = (typeof ACTIVITY_EVENT_TYPES)[number];
 
@@ -427,10 +448,35 @@ export const SIGNAL_TYPES = [
   "HIGH_CONVERSION_LOW_TRAFFIC",
   "UNMAPPED_LEAD_ATTRIBUTION",
   "INSUFFICIENT_DATA",
+  // P1C — Search Console / comparison-window SEO signals
+  "QUERY_GAINING_VISIBILITY",
+  "CTR_DECLINING",
+  "POSITION_IMPROVING",
+  "POSITION_DECLINING",
+  "QUERY_POSITION_NEAR_PAGE_ONE",
+  "QUERY_POSITION_NEAR_TOP_THREE",
+  "PAGE_WITH_IMPRESSIONS_NO_CLICKS",
+  "PAGE_WITH_CLICKS_NO_LEADS",
+  "PAGE_WITH_LEADS_AND_GROWING_VISIBILITY",
 ] as const;
 export type SignalType = (typeof SIGNAL_TYPES)[number];
 
-export const SIGNAL_SCOPES = ["page", "market", "niche", "attribution", "system"] as const;
+// Signal types that require Search Console data (suppressed when GSC is absent).
+export const GSC_DEPENDENT_SIGNALS: ReadonlyArray<SignalType> = [
+  "HIGH_IMPRESSIONS_LOW_CTR",
+  "COMMERCIAL_QUERY_POSITION_5_15",
+  "PAGE_GAINING_VISIBILITY",
+  "PAGE_LOSING_VISIBILITY",
+  "QUERY_GAINING_VISIBILITY",
+  "CTR_DECLINING",
+  "POSITION_IMPROVING",
+  "POSITION_DECLINING",
+  "QUERY_POSITION_NEAR_PAGE_ONE",
+  "QUERY_POSITION_NEAR_TOP_THREE",
+  "PAGE_WITH_IMPRESSIONS_NO_CLICKS",
+];
+
+export const SIGNAL_SCOPES = ["page", "query", "market", "niche", "attribution", "system"] as const;
 export type SignalScope = (typeof SIGNAL_SCOPES)[number];
 
 export const SIGNAL_STATUSES = ["OPEN", "ACKNOWLEDGED", "RESOLVED"] as const;
@@ -485,4 +531,27 @@ export interface IngestionState {
   last_status: string | null;
   last_error: string | null;
   rows_ingested: number;
+}
+
+// ─── Research task lifecycle (P1C) ───────────────────────────────────────────
+export const RESEARCH_TASK_STATUSES = ["QUEUED", "IN_PROGRESS", "BLOCKED", "COMPLETE", "STALE"] as const;
+export type ResearchTaskStatus = (typeof RESEARCH_TASK_STATUSES)[number];
+
+export interface ResearchTask {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  opportunity_id: string;
+  market_id: string | null;
+  niche_id: string | null;
+  status: ResearchTaskStatus;
+  assigned_actor: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  dimensions: string | null; // JSON string[] requested (defaults to the 6 components)
+  dimensions_completed: string | null; // JSON string[]
+  evidence_count: number;
+  confidence: number | null;
+  blockers: string | null;
+  notes: string | null;
 }

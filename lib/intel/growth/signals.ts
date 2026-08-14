@@ -17,7 +17,9 @@ import { buildPagePerformance, type PagePerformanceRow } from "./pageModel";
 import { searchConsoleAdapter, ga4Adapter } from "./adapters";
 import { createRecommendation } from "../recommendations";
 import { safeRecordActivity } from "../activity";
+import { GSC_DEPENDENT_SIGNALS } from "../types";
 import type {
+  ActivityEventType,
   EventSeverity,
   DataQuality,
   Recommendation,
@@ -61,6 +63,7 @@ export interface SignalInput {
   threshold?: unknown;
   evidence?: unknown;
   dedup_key?: string | null;
+  event_type?: ActivityEventType; // activity event on first creation (default SIGNAL_DETECTED)
 }
 
 export function getSignal(id: string): Signal | undefined {
@@ -139,7 +142,7 @@ export function recordSignal(input: SignalInput): { signal: Signal; created: boo
   );
 
   safeRecordActivity({
-    event_type: "SIGNAL_DETECTED",
+    event_type: input.event_type ?? "SIGNAL_DETECTED",
     actor_type: "system",
     actor_name: "growth-engine",
     target_type: "signal",
@@ -344,15 +347,26 @@ interface RecMapping {
 }
 
 const SIGNAL_TO_RECOMMENDATION: Partial<Record<SignalType, RecMapping>> = {
-  HIGH_IMPRESSIONS_LOW_CTR: { type: "OPTIMIZE_PAGE", priority: "high", effort: "low", expected_impact: "More clicks from existing impressions" },
-  COMMERCIAL_QUERY_POSITION_5_15: { type: "INVESTIGATE_QUERY", priority: "medium", effort: "medium", expected_impact: "Move to page-one positions" },
-  HIGH_CONVERSION_LOW_TRAFFIC: { type: "EXPAND_MARKET", priority: "medium", effort: "medium", expected_impact: "Scale a proven converter" },
-  LOW_TRAFFIC_HIGH_LEAD_QUALITY: { type: "EXPAND_MARKET", priority: "medium", effort: "medium", expected_impact: "Drive more traffic to a high-quality page" },
-  TRAFFIC_WITH_LOW_LEAD_CONVERSION: { type: "IMPROVE_CONVERSION", priority: "high", effort: "medium", expected_impact: "More leads from existing traffic" },
+  // Leads-side (P1B)
+  HIGH_CONVERSION_LOW_TRAFFIC: { type: "EXPAND_ACQUISITION", priority: "medium", effort: "medium", expected_impact: "Scale a proven converter" },
+  LOW_TRAFFIC_HIGH_LEAD_QUALITY: { type: "EXPAND_ACQUISITION", priority: "medium", effort: "medium", expected_impact: "Drive more traffic to a high-quality page" },
+  TRAFFIC_WITH_LOW_LEAD_CONVERSION: { type: "IMPROVE_CRO", priority: "high", effort: "medium", expected_impact: "More leads from existing traffic" },
   HIGH_LEAD_VOLUME_POOR_OUTCOME: { type: "IMPROVE_CONVERSION", priority: "high", effort: "medium", expected_impact: "Turn leads into won jobs" },
-  PAGE_LOSING_VISIBILITY: { type: "INVESTIGATE_PAGE", priority: "high", effort: "medium", expected_impact: "Recover lost search visibility" },
-  PAGE_GAINING_VISIBILITY: { type: "EXPAND_MARKET", priority: "low", effort: "low", expected_impact: "Capitalize on rising visibility" },
   UNMAPPED_LEAD_ATTRIBUTION: { type: "FIX_ATTRIBUTION", priority: "high", effort: "low", expected_impact: "Attribute leads so performance is measurable" },
+  // SEO / Search Console (P1C)
+  HIGH_IMPRESSIONS_LOW_CTR: { type: "OPTIMIZE_PAGE_METADATA", priority: "high", effort: "low", expected_impact: "More clicks from existing impressions" },
+  COMMERCIAL_QUERY_POSITION_5_15: { type: "IMPROVE_EXISTING_PAGE", priority: "medium", effort: "medium", expected_impact: "Move to page-one positions" },
+  QUERY_POSITION_NEAR_PAGE_ONE: { type: "IMPROVE_EXISTING_PAGE", priority: "medium", effort: "medium", expected_impact: "Push a near-page-one query onto page one" },
+  QUERY_POSITION_NEAR_TOP_THREE: { type: "MONITOR_WINNER", priority: "low", effort: "low", expected_impact: "Protect a near-top-three position" },
+  QUERY_GAINING_VISIBILITY: { type: "CREATE_SUPPORTING_CONTENT", priority: "medium", effort: "medium", expected_impact: "Reinforce a query gaining traction" },
+  CTR_DECLINING: { type: "OPTIMIZE_PAGE_METADATA", priority: "medium", effort: "low", expected_impact: "Recover declining click-through" },
+  POSITION_IMPROVING: { type: "MONITOR_WINNER", priority: "low", effort: "low", expected_impact: "Watch an improving page" },
+  POSITION_DECLINING: { type: "IMPROVE_EXISTING_PAGE", priority: "high", effort: "medium", expected_impact: "Arrest a declining ranking" },
+  PAGE_LOSING_VISIBILITY: { type: "INVESTIGATE_PAGE", priority: "high", effort: "medium", expected_impact: "Recover lost search visibility" },
+  PAGE_GAINING_VISIBILITY: { type: "MONITOR_WINNER", priority: "low", effort: "low", expected_impact: "Capitalize on rising visibility" },
+  PAGE_WITH_IMPRESSIONS_NO_CLICKS: { type: "OPTIMIZE_PAGE_METADATA", priority: "medium", effort: "low", expected_impact: "Earn first clicks from a seen-but-unclicked page" },
+  PAGE_WITH_CLICKS_NO_LEADS: { type: "IMPROVE_CRO", priority: "high", effort: "medium", expected_impact: "Convert existing clicks into leads" },
+  PAGE_WITH_LEADS_AND_GROWING_VISIBILITY: { type: "EXPAND_ACQUISITION", priority: "medium", effort: "medium", expected_impact: "Double down on a proven, rising page" },
 };
 
 export interface RecommendationGeneration {
@@ -380,8 +394,10 @@ export function generateRecommendationsFromSignals(): RecommendationGeneration {
     }
     fromSignals++;
     const dedup = `${mapping.type}:${sig.target}`;
-    // createRecommendation is the canonical creation point and emits the single
-    // RECOMMENDATION_CREATED activity event (deduplicated by dedup_key).
+    // createRecommendation is the canonical creation point and emits a single
+    // activity event (deduplicated by dedup_key). SEO-origin signals log the
+    // SEO_RECOMMENDATION_CREATED event type; others log RECOMMENDATION_CREATED.
+    const isSeo = GSC_DEPENDENT_SIGNALS.includes(sig.signal_type);
     const rec = createRecommendation({
       type: mapping.type,
       target: sig.target,
@@ -392,6 +408,7 @@ export function generateRecommendationsFromSignals(): RecommendationGeneration {
       priority: mapping.priority,
       effort: mapping.effort,
       dedup_key: dedup,
+      activity_event_type: isSeo ? "SEO_RECOMMENDATION_CREATED" : "RECOMMENDATION_CREATED",
     });
     created.push(rec);
   }

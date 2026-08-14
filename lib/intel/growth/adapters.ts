@@ -86,7 +86,11 @@ export interface SearchConsoleAdapter extends PerformanceAdapter {
 export const searchConsoleAdapter: SearchConsoleAdapter = {
   source: "gsc",
   isAvailable() {
-    return envSet("GSC_SITE_URL", "GOOGLE_SERVICE_ACCOUNT_JSON");
+    // A property plus a service account (inline JSON/base64 OR a file path).
+    return (
+      envSet("GSC_SITE_URL") &&
+      (envSet("GOOGLE_SERVICE_ACCOUNT_JSON") || envSet("GOOGLE_SERVICE_ACCOUNT_JSON_PATH"))
+    );
   },
   property() {
     const p = process.env.GSC_SITE_URL;
@@ -104,12 +108,16 @@ export const searchConsoleAdapter: SearchConsoleAdapter = {
         : "Not connected — set GSC_SITE_URL + GOOGLE_SERVICE_ACCOUNT_JSON",
     };
   },
-  async fetchSearchAnalytics() {
-    // Deferred: no real API client wired yet. NEVER returns fabricated rows.
-    return [];
+  async fetchSearchAnalytics(query) {
+    const prop = this.property();
+    if (!this.isAvailable() || !prop) return []; // NOT_CONNECTED → nothing, never faked
+    // Lazy import avoids loading crypto/client code paths until actually connected.
+    const { fetchSearchAnalytics } = await import("./gscClient");
+    return fetchSearchAnalytics(prop, query);
   },
   async fetchPageStats() {
-    // Intentionally returns nothing until wired to the real API.
+    // Page-level stats are derived from ingested intel_search_metrics, not fetched
+    // here; this returns nothing (the pageModel reads the store directly).
     return [];
   },
 };

@@ -97,10 +97,12 @@ export function upsertSearchMetrics(property: string, rows: SearchAnalyticsRow[]
         uuidv4(),
         property,
         r.date,
-        r.page ?? null,
-        r.query ?? null,
-        r.country ?? null,
-        r.device ?? null,
+        // SQLite treats NULLs in a UNIQUE index as DISTINCT, which would defeat
+        // idempotency. Store '' for an absent dimension so the unique key dedupes.
+        r.page ?? "",
+        r.query ?? "",
+        r.country ?? "",
+        r.device ?? "",
         r.clicks ?? null,
         r.impressions ?? null,
         r.ctr ?? null,
@@ -113,11 +115,20 @@ export function upsertSearchMetrics(property: string, rows: SearchAnalyticsRow[]
   return rows.length;
 }
 
+export interface IngestOptions {
+  now?: string; // injectable clock (ISO) for deterministic tests
+  lookbackDays?: number; // window size when no cursor exists (default 90)
+  startDate?: string; // explicit range start (recovery/debug) — overrides cursor
+  endDate?: string; // explicit range end
+}
+
 /**
  * Orchestrate one incremental Search Console pull. No-op (NOT_CONNECTED) until
- * credentials exist. `now`/`lookbackDays` are injectable for deterministic tests.
+ * credentials exist. Idempotent: re-ingesting an overlapping window upserts.
+ *  - default: incremental from the day after the cursor high-water mark
+ *  - startDate/endDate given: explicit range (recovery/debug), cursor not advanced backwards
  */
-export async function ingestSearchConsole(opts: { now?: string; lookbackDays?: number } = {}): Promise<IngestResult> {
+export async function ingestSearchConsole(opts: IngestOptions = {}): Promise<IngestResult> {
   const property = searchConsoleAdapter.property();
   const runAt = opts.now ?? new Date().toISOString();
 
@@ -136,13 +147,28 @@ export async function ingestSearchConsole(opts: { now?: string; lookbackDays?: n
     };
   }
 
-  // Incremental window: from the day after the cursor (or lookback) to yesterday.
   const cursor = getIngestionState("gsc", property);
   const lookback = opts.lookbackDays ?? 90;
-  const end = dayString(addDays(runAt, -1)); // GSC data lags ~1–2 days
-  const start = cursor?.last_ingested_date
-    ? dayString(addDays(`${cursor.last_ingested_date}T00:00:00Z`, 1))
-    : dayString(addDays(runAt, -lookback));
+  const explicit = opts.startDate != null && opts.endDate != null;
+  // GSC data lags ~1–2 days; default end = yesterday.
+  const end = opts.endDate ?? dayString(addDays(runAt, -1));
+  const start =
+    opts.startDate ??
+    (cursor?.last_ingested_date
+      ? dayString(addDays(`${cursor.last_ingested_date}T00:00:00Z`, 1))
+      : dayString(addDays(runAt, -lookback)));
+
+  safeRecordActivity({
+    event_type: "GSC_INGESTION_STARTED",
+    actor_type: "system",
+    actor_name: "gsc-ingest",
+    target_type: "ingestion",
+    target_id: "gsc",
+    title: "Search Console ingest started",
+    summary: `Window ${start}..${end} for ${property}${explicit ? " (explicit range)" : ""}.`,
+    metadata: { start, end, explicit },
+    severity: "info",
+  });
 
   try {
     const rows = await searchConsoleAdapter.fetchSearchAnalytics({
@@ -152,17 +178,22 @@ export async function ingestSearchConsole(opts: { now?: string; lookbackDays?: n
     });
     const written = upsertSearchMetrics(property, rows, runAt);
     const maxDate = rows.reduce<string | null>((m, r) => (m == null || r.date > m ? r.date : m), null);
+    // Only advance the high-water mark forward, never backward (explicit recovery
+    // ranges must not rewind incremental progress).
+    const advanced = maxDate && (!cursor?.last_ingested_date || maxDate > cursor.last_ingested_date)
+      ? maxDate
+      : (cursor?.last_ingested_date ?? maxDate ?? null);
     setIngestionState({
       source: "gsc",
       property,
-      last_ingested_date: maxDate ?? cursor?.last_ingested_date ?? null,
+      last_ingested_date: advanced,
       last_run_at: runAt,
       last_status: "SUCCESS",
       last_error: null,
       rows_ingested: written,
     });
     safeRecordActivity({
-      event_type: "DATA_INGESTION_COMPLETED",
+      event_type: "GSC_INGESTION_COMPLETED",
       actor_type: "system",
       actor_name: "gsc-ingest",
       target_type: "ingestion",
@@ -177,7 +208,7 @@ export async function ingestSearchConsole(opts: { now?: string; lookbackDays?: n
     const message = err instanceof Error ? err.message : "unknown error";
     setIngestionState({ source: "gsc", property, last_run_at: runAt, last_status: "FAILED", last_error: message });
     safeRecordActivity({
-      event_type: "DATA_INGESTION_FAILED",
+      event_type: "GSC_INGESTION_FAILED",
       actor_type: "system",
       actor_name: "gsc-ingest",
       target_type: "ingestion",
@@ -188,6 +219,16 @@ export async function ingestSearchConsole(opts: { now?: string; lookbackDays?: n
     });
     return { source: "gsc", status: "FAILED", property, rowsIngested: 0, fromDate: start, toDate: end, reason: message };
   }
+}
+
+/** Initial backfill — pulls a wide history window in one pass. */
+export function backfillSearchConsole(opts: { days?: number; now?: string } = {}): Promise<IngestResult> {
+  return ingestSearchConsole({ lookbackDays: opts.days ?? 180, now: opts.now });
+}
+
+/** Explicit date-range ingest for recovery/debugging. Idempotent. */
+export function ingestSearchConsoleRange(startDate: string, endDate: string, now?: string): Promise<IngestResult> {
+  return ingestSearchConsole({ startDate, endDate, now });
 }
 
 // ── tiny date helpers (UTC, deterministic) ───────────────────────────────────
