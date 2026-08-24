@@ -97,6 +97,9 @@ export {
   type SearchConsoleAdapter,
   type SearchAnalyticsRow,
   type SearchAnalyticsQuery,
+  type Ga4Adapter,
+  type Ga4PageRow,
+  type Ga4Query,
 } from "./growth/adapters";
 
 // Reporting
@@ -131,6 +134,17 @@ export {
   setIngestionState,
   type IngestResult,
 } from "./growth/searchConsole";
+
+// GA4 (Analytics) ingestion pipeline — per-page snapshots into intel_performance
+export {
+  ingestGa4,
+  backfillGa4,
+  ingestGa4Range,
+  upsertGa4Snapshots,
+  getGa4IngestionState,
+  type Ga4IngestResult,
+  type Ga4IngestOptions,
+} from "./growth/analytics";
 
 // Deterministic growth signals + signal→recommendation generation
 export {

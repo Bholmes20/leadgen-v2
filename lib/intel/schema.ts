@@ -196,6 +196,10 @@ export function ensureIntelSchema(db: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_intel_performance_scope
       ON intel_performance (scope, identifier, source, as_of);
+    -- One snapshot per (scope, identifier, source, as_of) — lets adapters upsert
+    -- an ingest window idempotently (ON CONFLICT) instead of duplicating rows.
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_intel_performance_unique
+      ON intel_performance (scope, identifier, source, as_of);
 
     -- ─── Activity / event audit layer (P1B) ─────────────────────────────────
     -- A durable, generic operational event stream. Meant to be consumed later by

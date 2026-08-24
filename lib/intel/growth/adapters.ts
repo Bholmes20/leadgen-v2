@@ -122,23 +122,87 @@ export const searchConsoleAdapter: SearchConsoleAdapter = {
   },
 };
 
-// ── GA4 Data API (deferred — interface only) ─────────────────────────────────
-export const ga4Adapter: PerformanceAdapter = {
+// ── Google Analytics 4 Data API ──────────────────────────────────────────────
+// Per-page aggregate metrics (sessions / users / pageviews / engagement) pulled
+// via the GA4 Data API `runReport`. Until GA4_PROPERTY_ID + a service account
+// (inline JSON/base64 OR a file path — same credential the GSC adapter uses) are
+// configured, isAvailable() is false and every fetch returns nothing (the report/
+// UI show NOT_CONNECTED rather than inventing numbers). Credentials never logged.
+//
+// Required to connect:
+//   • GA4_PROPERTY_ID             — numeric property id (e.g. 123456789)
+//   • GOOGLE_SERVICE_ACCOUNT_JSON(_PATH) — a service account added to the GA4
+//                                   property with at least Viewer access.
+
+// One row per pagePath, metrics summed across the queried window.
+export interface Ga4PageRow {
+  pagePath: string | null;
+  sessions?: number | null;
+  totalUsers?: number | null;
+  screenPageViews?: number | null;
+  engagementRate?: number | null; // 0..1 (session-weighted over the window)
+}
+
+export interface Ga4Query {
+  startDate: string; // inclusive YYYY-MM-DD (or a GA4 relative token like "90daysAgo")
+  endDate: string; // inclusive YYYY-MM-DD (or "yesterday"/"today")
+  rowLimit?: number;
+}
+
+export interface Ga4Adapter extends PerformanceAdapter {
+  /** The configured numeric property id, or null when not connected. */
+  property(): string | null;
+  connectionState(): ConnectionState;
+  /** Per-page aggregate metrics pull. Returns [] until authenticated. */
+  fetchPageMetrics(query: Ga4Query): Promise<Ga4PageRow[]>;
+}
+
+export const ga4Adapter: Ga4Adapter = {
   source: "ga4",
   isAvailable() {
-    return envSet("GA4_PROPERTY_ID", "GOOGLE_SERVICE_ACCOUNT_JSON");
+    // A property plus a service account (inline JSON/base64 OR a file path) —
+    // mirrors the GSC adapter so the same credential works for both.
+    return (
+      envSet("GA4_PROPERTY_ID") &&
+      (envSet("GOOGLE_SERVICE_ACCOUNT_JSON") || envSet("GOOGLE_SERVICE_ACCOUNT_JSON_PATH"))
+    );
+  },
+  property() {
+    // Lazy import keeps crypto/client code paths out of the module graph until used.
+    const raw = process.env.GA4_PROPERTY_ID;
+    if (typeof raw !== "string" || raw.trim().length === 0) return null;
+    const digits = raw.trim().replace(/^properties\//, "").trim();
+    return /^\d+$/.test(digits) ? digits : null;
+  },
+  connectionState() {
+    return this.isAvailable() ? "CONNECTED" : "NOT_CONNECTED";
   },
   status() {
+    const available = this.isAvailable();
     return {
       source: "ga4",
-      available: this.isAvailable(),
-      reason: this.isAvailable()
-        ? "GA4 Data API credentials configured"
-        : "Not connected — set GA4_PROPERTY_ID + GOOGLE_SERVICE_ACCOUNT_JSON",
+      available,
+      reason: available
+        ? this.property()
+          ? "GA4 Data API credentials configured"
+          : "GA4_PROPERTY_ID is set but not a valid numeric property id"
+        : "Not connected — set GA4_PROPERTY_ID + GOOGLE_SERVICE_ACCOUNT_JSON(_PATH)",
     };
   },
+  async fetchPageMetrics(query) {
+    const prop = this.property();
+    if (!this.isAvailable() || !prop) return []; // NOT_CONNECTED → nothing, never faked
+    const { fetchPageMetrics } = await import("./ga4Client");
+    return fetchPageMetrics(prop, query);
+  },
   async fetchPageStats() {
-    return [];
+    // Convenience: a trailing-28-day per-page snapshot mapped to the generic
+    // PageStat shape. Returns [] when not connected. The ingestion path uses
+    // fetchPageMetrics() with an explicit window instead.
+    const rows = await this.fetchPageMetrics({ startDate: "28daysAgo", endDate: "yesterday" });
+    return rows
+      .filter((r) => r.pagePath)
+      .map((r) => ({ identifier: r.pagePath as string, sessions: r.sessions ?? undefined }));
   },
 };
 
