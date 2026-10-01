@@ -18,7 +18,7 @@ export const NICHES: Niche[] = [
       "apartment cleanout",
       "rental turnover junk removal",
     ],
-    pricing: { low: 175, high: 600, note: "Priced by volume and labor; firm quote before any work." },
+    pricing: { note: "Priced by volume and labor; firm quote before any work." },
     whatWeTake: [
       "Abandoned furniture — sofas, beds, dressers, tables",
       "Mattresses and box springs",
@@ -76,7 +76,7 @@ export const NICHES: Niche[] = [
       "REO trash out",
       "property preservation cleanout",
     ],
-    pricing: { low: 250, high: 900, note: "Heavier and dirtier than a standard cleanout; quoted after photos or a walkthrough." },
+    pricing: { note: "Heavier and dirtier than a standard cleanout; quoted after photos or a walkthrough." },
     whatWeTake: [
       "Full-house trash left after an eviction or skip",
       "Spoiled food and refrigerator/freezer contents",
@@ -132,7 +132,7 @@ export const NICHES: Niche[] = [
       "remodel junk removal",
       "contractor debris pickup",
     ],
-    pricing: { low: 200, high: 750, note: "Heavier loads (tile, plaster, countertops) priced by weight and volume." },
+    pricing: { note: "Heavier loads (tile, plaster, countertops) priced by weight and volume." },
     whatWeTake: [
       "Drywall, plaster, and lath",
       "Torn-out flooring, carpet, and tile",
@@ -189,7 +189,7 @@ export const NICHES: Niche[] = [
       "carpet tear out",
       "carpet and pad removal",
     ],
-    pricing: { low: 150, high: 500, unit: "job", note: "Usually priced by number and size of rooms, plus stairs." },
+    pricing: { note: "Usually priced by number and size of rooms, plus stairs." },
     whatWeTake: [
       "Wall-to-wall carpet and padding",
       "Tack strips around the perimeter",
@@ -243,7 +243,7 @@ export const NICHES: Niche[] = [
       "vacant lot cleanup",
       "property overgrowth removal",
     ],
-    pricing: { low: 250, high: 1200, note: "Depends on lot size and how long it's been left; scoped from photos or a visit." },
+    pricing: { note: "Depends on lot size and how long it's been left; scoped from photos or a visit." },
     whatWeTake: [
       "Tall grass and weeds",
       "Brush, briars, and vines",
@@ -298,7 +298,7 @@ export const NICHES: Niche[] = [
       "shed removal",
       "above ground pool removal",
     ],
-    pricing: { low: 200, high: 800, note: "We handle the teardown; priced by structure size and haul volume." },
+    pricing: { note: "We handle the teardown; priced by structure size and haul volume." },
     whatWeTake: [
       "Wooden and metal swing sets and playsets",
       "Trampolines",

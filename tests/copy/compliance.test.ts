@@ -73,6 +73,11 @@ const BANNED: Rule[] = [
   // False urgency.
   { label: "false-urgency scarcity claim", re: /\blimited slots?\b|\bslots? (?:are )?(?:almost )?full\b|\bslots fill\b|\bspots (?:are )?fill|\bfilling fast\b|\blimited availability\b|\bbook before\b|\bfirst[\s-]?come\b/i },
 
+  // Near-term availability / booking promises we can't guarantee. Customer-action
+  // prompts like "request your quote this week" are fine — these ban only claims that
+  // WE are available/can book at a specific near time.
+  { label: "near-term availability claim", re: /\bsame[\s-]?week\b|\bavailable (?:this|next|same)[\s-]?week(?:end)?\b|\bopenings this week\b|\bweekend availability\b|\bbook this week\b|\bon the schedule this week\b/i },
+
   // Over-broad scope claims.
   { label: "over-broad scope claim", re: /\bnothing too (?:big|small)\b|\banything hauled away\b|\bno job too small\b|\bpretty much anything\b|\btake it all\b/i },
 
@@ -133,6 +138,7 @@ test("standard disclosure is surfaced on key pages", () => {
   const usesConstant = [
     "app/page.tsx",
     "app/junk-removal-augusta-ga/page.tsx",
+    "app/leads/new/LeadForm.tsx",
     "components/seo/CityHub.tsx",
     "components/seo/NicheHub.tsx",
     "components/seo/LandingPage.tsx",

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { attributionToFields } from "@/lib/attribution";
 import { captureAttribution, getStoredAttribution } from "@/lib/attributionClient";
 import { trackLead } from "@/lib/analytics";
+import { SERVICE_DISCLOSURE } from "@/lib/site";
 
 type Service = "junk-removal" | "landscaping" | "";
 
@@ -102,6 +103,7 @@ export default function LeadForm() {
           <Link href="/" className="text-green-600 font-medium hover:underline">
             Back to Home
           </Link>
+          <p className="mt-8 text-xs text-gray-400">{SERVICE_DISCLOSURE}</p>
         </div>
       </main>
     );
@@ -260,6 +262,8 @@ export default function LeadForm() {
             {submitting ? "Submitting..." : "Submit Request"}
           </button>
         </form>
+
+        <p className="mt-6 text-xs text-gray-400 leading-relaxed">{SERVICE_DISCLOSURE}</p>
       </div>
     </main>
   );

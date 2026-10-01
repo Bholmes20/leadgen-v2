@@ -134,7 +134,7 @@ export const BODIES: Record<Service, Record<AdFormat, string[]>> = {
       "New-customer lawn care available in the Augusta area this month. Request a quote online.",
       "Weekly lawn care available in Augusta, Evans, Martinez. No contracts. Get a quote online.",
       "End-of-month lawn cleanup available — request yours online.",
-      "New-customer lawn care this week. Augusta-area homeowners — request online.",
+      "New-customer lawn care for Augusta-area homeowners — request online.",
       "Referral bonus: send us a customer and we'll thank you on your next service.",
     ],
     headline: [
@@ -145,7 +145,7 @@ export const BODIES: Record<Service, Record<AdFormat, string[]>> = {
       "New-Customer Lawn Care in Augusta & CSRA",
     ],
     cta: [
-      "Request a free quote online — get on the schedule this week",
+      "Request a free quote online — tell us about your lawn",
       "Get a quote online for your lawn — no commitment required",
       "Submit your info online for a quote — no commitment required",
       "Request your free estimate online — ask about our new-customer service",
@@ -165,10 +165,10 @@ export const BODIES: Record<Service, Record<AdFormat, string[]>> = {
       "Neighbors — heading into the season change and looking to get your yard cleaned up? Esee Property Services handles seasonal cleanups for Augusta and Columbia County homeowners. Debris removal, trimming, haul-away — one visit makes a big difference. Request a free quote on our website, or message me if you have questions!",
     ],
     "promo-blurb": [
-      "Seasonal cleanup available — book this week. Request your quote online.",
-      "Get your yard ready before the holidays. Same-week booking available — request online.",
+      "Seasonal cleanup in the Augusta area. Request your quote online.",
+      "Get your yard ready before the holidays. Request your free quote online.",
       "One-time seasonal cleanup — all haul-away included. Get a quote online.",
-      "Cleanup available this weekend. Augusta, Evans & Martinez. Request your quote online.",
+      "Seasonal cleanup in Augusta, Evans & Martinez. Request your quote online.",
     ],
     headline: [
       "Seasonal Yard Cleanup — Augusta & CSRA",
@@ -196,10 +196,10 @@ export const BODIES: Record<Service, Record<AdFormat, string[]>> = {
       "Hey neighbors! If your yard has gotten a bit out of hand and you need a one-time cleanup — Esee Property Services handles cleanup and haul-away across the Augusta area. No long-term commitment. Request a free quote on our website, or message me directly.",
     ],
     "promo-blurb": [
-      "Yard cleanup available this week — haul-away included. Request your quote online.",
+      "Yard cleanup with haul-away included. Request your quote online.",
       "Rental property cleanup available — request a quote online.",
-      "One-time yard reset — available same week. Request online, Evans, Martinez & Augusta.",
-      "Weekend availability: full yard cleanup + haul-away. Request yours online.",
+      "One-time yard reset. Request online — Evans, Martinez & Augusta.",
+      "Full yard cleanup + haul-away. Request yours online.",
     ],
     headline: [
       "Full Yard Cleanup — Augusta, GA",
@@ -208,7 +208,7 @@ export const BODIES: Record<Service, Record<AdFormat, string[]>> = {
       "Yard Cleanup in Columbia County & Augusta",
     ],
     cta: [
-      "Upload photos and get a free quote online — same-week availability",
+      "Upload photos and get a free quote online — fast, no pressure",
       "Request a free estimate online — we'll get right back to you",
       "Get your quote online in minutes — or text us",
       "Submit photos online for accurate pricing — no commitment required",
@@ -229,7 +229,7 @@ export const BODIES: Record<Service, Record<AdFormat, string[]>> = {
     ],
     "promo-blurb": [
       "Fall leaf removal available — haul included. Request your quote online.",
-      "Leaf cleanup + haul-away this weekend — Augusta, Evans, Martinez. Request online.",
+      "Leaf cleanup + haul-away in Augusta, Evans, Martinez. Request online.",
       "Tired of raking? We can handle it. Get a quote online or text us.",
       "Leaf removal available — mention this post when you request online, Augusta area.",
     ],
