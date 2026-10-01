@@ -5,34 +5,32 @@ import {
   buildFaqSchema,
   buildBreadcrumbSchema,
 } from "@/lib/seo/schema";
-import { SITE_URL, BUSINESS_NAME } from "@/lib/site";
+import { SITE_URL, SERVICE_DISCLOSURE } from "@/lib/site";
 import AttributionTracker from "@/components/AttributionTracker";
 import { JsonLd, PhoneBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
 
 export default function NicheHub({ hub }: { hub: NicheHubData }) {
   const { niche, pages } = hub;
-  const low = Math.min(...pages.map((p) => p.pricing.low));
-  const high = Math.max(...pages.map((p) => p.pricing.high));
 
   const howItWorks = [
     {
       n: "1",
       title: "Submit your request",
-      body: "Tell us what you need and where the job is. A few photos help a provider size it and quote it accurately.",
+      body: "Tell us what you need and where the job is. A few photos help us size it and quote it accurately.",
     },
     {
       n: "2",
-      title: "We match you with a local provider",
-      body: "We connect your request with an available local provider who covers your area — no waiting on hold.",
+      title: "We confirm scope and price",
+      body: "We review your request and send you a quote. The work is done by ESEE directly or by an approved local service partner.",
     },
     {
       n: "3",
       title: "Confirm the quote and schedule",
-      body: "Your provider confirms pricing and coordinates the work with you directly. Nothing starts until you approve it.",
+      body: "Once you approve the quote, we schedule the work and handle it from there. Nothing starts until you approve it.",
     },
   ];
 
-  const disclaimer = `${BUSINESS_NAME} is a local service-matching platform. We connect your ${niche.shortLabel} request with a local provider in the areas we serve; the provider performs the work and confirms pricing before it begins.`;
+  const disclaimer = SERVICE_DISCLOSURE;
 
   return (
     <main>
@@ -119,14 +117,12 @@ export default function NicheHub({ hub }: { hub: NicheHubData }) {
         </div>
       </section>
 
-      {/* Typical pricing */}
+      {/* How pricing works */}
       <section className="bg-gray-50 px-6 py-16 border-t border-gray-100">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Typical pricing</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">How pricing works</h2>
           <p className="text-lg text-gray-700">
-            {`Most ${niche.shortLabel} jobs in the areas we serve run `}
-            <strong>{`$${low}–$${high}`}</strong>
-            {" — the final price is set by your local provider and confirmed before any work starts."}
+            {`Every ${niche.shortLabel} job is quoted individually, based on what the job involves. We confirm scope and price with you before any work begins — sending a few photos with your request is the fastest way to get an accurate quote.`}
           </p>
         </div>
       </section>
@@ -152,7 +148,7 @@ export default function NicheHub({ hub }: { hub: NicheHubData }) {
           </ul>
           <p className="mt-6 text-sm text-gray-500">
             Don&apos;t see your town? We serve the wider CSRA — request a quote and we&apos;ll let
-            you know if a local provider covers your area.
+            you know if we cover your area.
           </p>
         </div>
       </section>
@@ -174,7 +170,7 @@ export default function NicheHub({ hub }: { hub: NicheHubData }) {
 
       <LeadCtaBand
         heading={`Need ${niche.label.toLowerCase()}?`}
-        sub="Request a free quote online and we will connect you with an available local provider in your area."
+        sub="Request a free quote online and we'll get back to you with pricing and next steps."
       />
 
       <SiteFooter disclaimer={disclaimer} />

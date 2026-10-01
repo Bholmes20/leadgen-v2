@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { CityHub as CityHubData } from "@/lib/seo";
 import { buildBreadcrumbSchema } from "@/lib/seo/schema";
-import { SITE_URL, BUSINESS_NAME } from "@/lib/site";
+import { SITE_URL, SERVICE_DISCLOSURE } from "@/lib/site";
 import AttributionTracker from "@/components/AttributionTracker";
 import { JsonLd, PhoneBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
 
@@ -9,7 +9,7 @@ export default function CityHub({ hub }: { hub: CityHubData }) {
   const { city, pages } = hub;
   const cityLabel = `${city.name}, ${city.state}`;
 
-  const disclaimer = `${BUSINESS_NAME} is a local service-matching platform serving ${cityLabel}. We connect your request with a local provider who does the work. The services listed here are the ones with a dedicated ${city.name} page today — request a quote for anything else and we'll let you know if a provider covers it.`;
+  const disclaimer = `${SERVICE_DISCLOSURE} The services listed here are the ones with a dedicated ${city.name} page today — request a quote for anything else and we'll let you know if we cover it.`;
 
   return (
     <main>
@@ -32,8 +32,8 @@ export default function CityHub({ hub }: { hub: CityHubData }) {
           </h1>
           <p className="text-lg text-gray-600 mb-4">{city.blurb}</p>
           <p className="text-lg text-gray-600 mb-8">
-            {`Tell us about your job in ${city.name} and we'll connect you with an available local
-            provider. Below are the services we currently cover with a dedicated ${city.name} page.`}
+            {`Tell us about your job in ${city.name} and we'll get back to you with a free quote.
+            Below are the services we currently cover with a dedicated ${city.name} page.`}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -97,7 +97,7 @@ export default function CityHub({ hub }: { hub: CityHubData }) {
 
       <LeadCtaBand
         heading={`Serving ${city.name} and the surrounding area`}
-        sub="Request a free quote online and we will connect you with an available local provider near you."
+        sub="Request a free quote online and we'll get back to you with pricing and next steps."
       />
 
       <SiteFooter disclaimer={disclaimer} />

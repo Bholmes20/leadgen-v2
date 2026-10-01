@@ -126,7 +126,7 @@ function buildHtml(p: LeadConfirmationParams): string {
                           1.
                         </td>
                         <td style="font-size:14px;color:#57534e;line-height:1.55;">
-                          We review your request and match you with a local pro
+                          We review your request and confirm the scope of the job
                         </td>
                       </tr>
                     </table>
@@ -185,6 +185,12 @@ function buildHtml(p: LeadConfirmationParams): string {
           <tr>
             <td style="background-color:#f5f5f4;border-radius:0 0 12px 12px;
                        padding:20px 40px;text-align:center;">
+              <p style="margin:0 0 10px;font-size:11px;color:#a8a29e;line-height:1.6;">
+                Esee Property Services manages your job from quote to completion.
+                Depending on the job and location, the work is done by ESEE directly
+                or by an approved local service partner. We confirm scope and price
+                with you before any work begins.
+              </p>
               <p style="margin:0;font-size:12px;color:#a8a29e;line-height:1.6;">
                 Esee Property Services &nbsp;&middot;&nbsp; ${BUSINESS_CITY}<br />
                 You received this because you submitted a service request.

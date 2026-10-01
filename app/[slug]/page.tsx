@@ -35,11 +35,11 @@ export async function generateMetadata({
   } else if (resolved.kind === "niche") {
     const { niche } = resolved.hub;
     title = `${niche.label} — Augusta, GA & the CSRA`;
-    description = `${niche.blurb} Serving the Augusta, GA area and the CSRA — request a free quote and we'll match you with a local provider.`;
+    description = `${niche.blurb} Serving the Augusta, GA area and the CSRA — request a free quote and we'll handle it from quote to completion.`;
   } else {
     const { city } = resolved.hub;
     title = `Property Cleanout & Removal Services in ${city.name}, ${city.state}`;
-    description = `${city.blurb} Connect with a local provider — see the property services available in ${city.name}, ${city.state}.`;
+    description = `${city.blurb} See the property services we handle in ${city.name}, ${city.state} — request a free quote.`;
   }
 
   return {

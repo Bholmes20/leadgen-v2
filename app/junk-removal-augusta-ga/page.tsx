@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SERVICE_DISCLOSURE } from "@/lib/site";
 
 const SITE_URL = "https://leads.eseeent.com";
 const BUSINESS_NAME = "Esee Property Services";
@@ -10,14 +11,14 @@ const PAGE_URL = `${SITE_URL}/junk-removal-augusta-ga`;
 export const metadata: Metadata = {
   title: PAGE_TITLE,
   description:
-    "Need junk removed in Augusta, GA? Esee Property Services connects you with local haulers serving Summerville, Harrisburg, South Augusta, and the CSRA. Request a free quote online — fair pricing, fast response.",
+    "Need junk removed in Augusta, GA? Esee Property Services handles junk removal across Summerville, Harrisburg, South Augusta, and the CSRA. Request a free quote online — we confirm scope and price before any work begins.",
   alternates: {
     canonical: "/junk-removal-augusta-ga",
   },
   openGraph: {
     title: `${PAGE_TITLE} | ${BUSINESS_NAME}`,
     description:
-      "Need junk removed in Augusta, GA? Esee Property Services connects you with local haulers serving Summerville, Harrisburg, South Augusta, and the CSRA. Request a free quote online.",
+      "Need junk removed in Augusta, GA? Esee Property Services handles junk removal across Summerville, Harrisburg, South Augusta, and the CSRA. Request a free quote online.",
     url: "/junk-removal-augusta-ga",
     type: "website",
   },
@@ -28,7 +29,7 @@ const serviceSchema = {
   "@type": "Service",
   name: PAGE_TITLE,
   description:
-    "Esee Property Services connects Augusta, GA residents with local junk haulers for furniture removal, appliance haul-away, garage cleanouts, and more.",
+    "Esee Property Services handles junk removal in Augusta, GA — furniture removal, appliance haul-away, garage cleanouts, and more. We manage the job from quote to completion, done by ESEE directly or by an approved local service partner.",
   provider: {
     "@type": "Organization",
     name: BUSINESS_NAME,
@@ -40,11 +41,6 @@ const serviceSchema = {
     addressRegion: "GA",
   },
   serviceType: "Junk Removal",
-  offers: {
-    "@type": "Offer",
-    priceRange: "$150-$450",
-    priceCurrency: "USD",
-  },
 };
 
 const faqSchema = {
@@ -56,7 +52,7 @@ const faqSchema = {
       name: "How do I get a junk removal quote in Augusta, GA?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Submit a request online with a description of what needs to be removed and your location. Include photos for a faster, more accurate quote. A local provider will respond — same-day quote response is available for many Augusta-area requests.",
+        text: "Submit a request online with a description of what needs to be removed and your location. Include photos for a faster, more accurate quote. We'll respond with a quote and confirm scope and price before any work begins.",
       },
     },
     {
@@ -64,7 +60,7 @@ const faqSchema = {
       name: "How much does junk removal cost in Augusta, GA?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Most residential junk removal jobs in Augusta range from $150 to $450 depending on load size, item type, access, and disposal needs. Pricing is confirmed before any work begins.",
+        text: "Every junk removal job is quoted individually based on load size, item type, access, and disposal needs. We confirm scope and price with you before any work begins — sending photos is the fastest way to get an accurate quote.",
       },
     },
     {
@@ -80,7 +76,7 @@ const faqSchema = {
       name: "Do I need to be home for junk removal pickup in Augusta?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "In most cases, yes. Someone should be available at the time of pickup to confirm the items and scope. Your provider will coordinate the timing directly with you after the quote is accepted.",
+        text: "In most cases, yes. Someone should be available at the time of pickup to confirm the items and scope. We'll coordinate the timing with you after the quote is accepted.",
       },
     },
     {
@@ -88,7 +84,7 @@ const faqSchema = {
       name: "How quickly can I get junk removed in Augusta, GA?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Many requests receive a same-day quote response. Actual pickup scheduling depends on provider availability in your area. Submit your request online for the fastest response.",
+        text: "We follow up on requests as quickly as we can. Actual pickup scheduling depends on availability in your area. Submit your request online for the fastest response.",
       },
     },
     {
@@ -96,7 +92,7 @@ const faqSchema = {
       name: "Do you serve areas outside Augusta city limits?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes. In addition to Augusta, Esee Property Services connects requests from Evans, Grovetown, Martinez, North Augusta SC, and Aiken SC.",
+        text: "Yes. In addition to Augusta, Esee Property Services serves Evans, Grovetown, Martinez, North Augusta SC, and Aiken SC.",
       },
     },
   ],
@@ -144,11 +140,11 @@ const WHAT_NOT_ACCEPTED = [
 const FAQS = [
   {
     q: "How do I get a junk removal quote in Augusta, GA?",
-    a: 'Submit a request through our online form. Include a brief description of what needs to be removed and, if possible, a few photos. You\'ll receive a quote response from a local provider — same-day quote response is available for many Augusta-area requests.',
+    a: "Submit a request through our online form. Include a brief description of what needs to be removed and, if possible, a few photos. We'll follow up with a quote and confirm scope and price before any work begins.",
   },
   {
     q: "How much does junk removal cost in Augusta?",
-    a: "Most residential junk removal in Augusta runs $150–$450 depending on the volume of items, weight, access difficulty, and disposal costs. A single large appliance or sofa is typically at the lower end. A garage full of mixed debris will be quoted at the higher end. You'll get exact pricing before committing.",
+    a: "Every job is quoted individually, based on the volume of items, weight, access difficulty, and disposal costs. A single large appliance or sofa is a smaller job; a garage full of mixed debris is a larger one. We confirm scope and price with you before any work begins — sending photos is the fastest way to get an accurate quote.",
   },
   {
     q: "What items can be hauled?",
@@ -156,15 +152,15 @@ const FAQS = [
   },
   {
     q: "Do I need to be home for the pickup?",
-    a: "In most cases, yes — someone should be available to confirm the items and the quoted scope before the haul begins. Your provider will coordinate directly with you on timing.",
+    a: "In most cases, yes — someone should be available to confirm the items and the quoted scope before the haul begins. We'll coordinate directly with you on timing.",
   },
   {
     q: "How quickly can I get junk removed in Augusta?",
-    a: "Availability varies by provider and schedule. Many requests receive a same-day quote response. Actual pickup scheduling depends on provider availability and your location within the service area.",
+    a: "Availability varies by schedule. We follow up on requests as quickly as we can, and pickup scheduling depends on availability and your location within the service area.",
   },
   {
     q: "Do you serve all of Augusta, GA?",
-    a: "Yes. We route requests from across Augusta — Summerville, Harrisburg, South Augusta, downtown, Barton Chapel Road, and West Augusta. We also serve Evans, Grovetown, Martinez, North Augusta SC, and Aiken SC.",
+    a: "Yes. We serve all of Augusta — Summerville, Harrisburg, South Augusta, downtown, Barton Chapel Road, and West Augusta. We also serve Evans, Grovetown, Martinez, North Augusta SC, and Aiken SC.",
   },
 ];
 
@@ -251,14 +247,14 @@ export default function JunkRemovalAugustaPage() {
           <p className="text-lg text-gray-600 mb-4">
             Whether you&apos;re clearing out a garage off Barton Chapel Road, hauling
             old furniture from a Summerville rental, or doing a full cleanout near
-            the SRP Park area, Esee Property Services connects Augusta residents
-            and property owners with local junk haulers who get the job done.
+            the SRP Park area, Esee Property Services handles junk removal for
+            Augusta residents and property owners and gets the job done.
           </p>
           <p className="text-lg text-gray-600 mb-8">
             You submit your request online — ideally with a few photos — and we
-            match you with an available local provider who serves your area. No
-            waiting on hold. No back-and-forth. Just a straightforward process
-            that gets you from &quot;I need this gone&quot; to done.
+            get back to you with a quote. We handle the job from quote to
+            completion, so it&apos;s a straightforward process that gets you from
+            &quot;I need this gone&quot; to done.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -292,13 +288,13 @@ export default function JunkRemovalAugustaPage() {
               },
               {
                 n: "2",
-                title: "We match you with a local provider",
-                body: "Based on your location, item type, and load size, we connect your request with an available hauler in the Augusta metro area.",
+                title: "We confirm scope and price",
+                body: "Based on your location, item type, and load size, we send you a quote. The work is done by ESEE directly or by an approved local service partner in the Augusta metro area.",
               },
               {
                 n: "3",
                 title: "Confirm and schedule",
-                body: "Once you've reviewed the quote, your provider coordinates the pickup. Same-day quote response is available for many Augusta-area requests.",
+                body: "Once you've approved the quote, we coordinate the pickup and handle it from there. Scope and price are confirmed before any work begins.",
               },
             ].map(({ n, title, body }) => (
               <li key={n} className="flex gap-4">
@@ -341,8 +337,8 @@ export default function JunkRemovalAugustaPage() {
               ))}
             </ul>
             <p className="mt-4 text-sm text-gray-500">
-              Unsure about a specific item? Note it in your quote request and a
-              provider will advise you directly.
+              Unsure about a specific item? Note it in your quote request and
+              we&apos;ll advise you directly.
             </p>
           </div>
           <div>
@@ -375,26 +371,26 @@ export default function JunkRemovalAugustaPage() {
           </h2>
           <div className="bg-white border border-gray-200 rounded-2xl p-8">
             <p className="text-lg text-gray-700 mb-4">
-              Most Augusta residential junk removal jobs range from{" "}
-              <strong>$150–$450</strong> depending on load size, item type,
-              access difficulty, and disposal needs.
+              Every junk removal job is quoted individually, based on load size,
+              item type, access difficulty, and disposal needs.
             </p>
             <ul className="space-y-2 text-gray-600 text-sm mb-6">
               <li>
-                · Single piece of furniture from a ground-floor room — lower
-                end of the range
+                · A single piece of furniture from a ground-floor room is a
+                smaller job
               </li>
               <li>
-                · Full garage cleanout with mixed debris and appliances —
-                quoted accordingly
+                · A full garage cleanout with mixed debris and appliances is a
+                larger one
               </li>
               <li>
-                · Multi-trip hauls or specialty items — confirmed in your quote
+                · Multi-trip hauls or specialty items are confirmed in your
+                quote
               </li>
             </ul>
             <p className="text-gray-700 mb-6">
-              Pricing is confirmed before any work begins — no surprises at
-              pickup. Including photos with your request is the fastest way to
+              We confirm scope and price with you before any work begins.
+              Including photos with your request is the fastest way to
               get an accurate quote.
             </p>
             <Link
@@ -414,8 +410,7 @@ export default function JunkRemovalAugustaPage() {
             Serving Augusta and the Surrounding CSRA
           </h2>
           <p className="text-gray-600 mb-8">
-            We route junk removal requests from across Augusta and the broader
-            metro area:
+            We handle junk removal across Augusta and the broader metro area:
           </p>
           <ul className="space-y-4 mb-6">
             {SERVICE_AREAS.map(({ area, detail }) => (
@@ -465,8 +460,8 @@ export default function JunkRemovalAugustaPage() {
           Ready to clear it out?
         </h2>
         <p className="text-green-100 mb-8 max-w-xl mx-auto">
-          Send a few pictures and request a free quote online. You&apos;ll hear
-          back from a local Augusta-area provider with pricing and next steps.
+          Send a few pictures and request a free quote online. We&apos;ll get
+          back to you with pricing and next steps.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
@@ -486,20 +481,23 @@ export default function JunkRemovalAugustaPage() {
 
       {/* Footer nav */}
       <div className="bg-white border-t border-gray-100 px-6 py-6">
-        <div className="max-w-3xl mx-auto flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500">
-          <Link href="/" className="hover:text-green-600 transition-colors">
-            ← Back to Home
-          </Link>
-          <span aria-hidden="true">·</span>
-          <Link
-            href="/leads/new"
-            className="hover:text-green-600 transition-colors"
-          >
-            Request a Quote
-          </Link>
-          <span aria-hidden="true">·</span>
-          {/* Link activates once /landscaping-augusta-ga is built */}
-          <span className="text-gray-400">Landscaping in Augusta, GA</span>
+        <div className="max-w-3xl mx-auto">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 mb-4">
+            <Link href="/" className="hover:text-green-600 transition-colors">
+              ← Back to Home
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link
+              href="/leads/new"
+              className="hover:text-green-600 transition-colors"
+            >
+              Request a Quote
+            </Link>
+            <span aria-hidden="true">·</span>
+            {/* Link activates once /landscaping-augusta-ga is built */}
+            <span className="text-gray-400">Landscaping in Augusta, GA</span>
+          </div>
+          <p className="text-xs text-gray-400">{SERVICE_DISCLOSURE}</p>
         </div>
       </div>
     </main>

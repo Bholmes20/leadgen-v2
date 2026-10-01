@@ -5,12 +5,12 @@ import { SITE_URL, BUSINESS_NAME, BUSINESS_PHONE } from "../site";
 
 // JSON-LD builders for the SEO factory.
 //
-// Business-identity model: ESEE is a lead-generation / service-matching platform, not
-// the entity that physically performs each cleanup. So the site-wide identity is an
-// Organization (not LocalBusiness — which implies a physical business performing the
-// work), and every Service names that Organization as the provider of the *matching*
-// service, with a description that states plainly that work is done by local providers.
-// We make no claims about addresses, geo, ratings, certifications, or contractors.
+// Business-identity model: ESEE is the customer-facing property services company and
+// manages each job from quote to completion — the work is performed by ESEE directly
+// or by an approved local service partner. The site-wide identity is an Organization
+// (not LocalBusiness, which would imply a single physical storefront), and every
+// Service names that Organization as the provider. We make no claims about addresses,
+// geo, ratings, certifications, prices, or turnaround times.
 
 export function pageUrl(slug: string): string {
   return `${SITE_URL}/${slug}`;
@@ -23,7 +23,7 @@ const AREA_SERVED = CITIES.map((c) => ({
   addressRegion: c.state,
 }));
 
-/** ESEE as an Organization (service-matching platform). Used site-wide in the layout. */
+/** ESEE as an Organization (property services company). Used site-wide in the layout. */
 export function buildOrganizationSchema() {
   return {
     "@context": "https://schema.org",
@@ -31,7 +31,7 @@ export function buildOrganizationSchema() {
     name: BUSINESS_NAME,
     url: SITE_URL,
     description:
-      "A local service-matching platform that connects property owners and managers across the Augusta, GA / CSRA area with local providers for junk removal, cleanouts, debris removal, and related property services.",
+      "A property services company serving the Augusta, GA / CSRA area — rental cleanouts, junk and debris removal, carpet removal, overgrown-lot cleanup, and related property services. We manage each job from quote to completion; the work is done by ESEE directly or by an approved local service partner.",
     areaServed: AREA_SERVED,
     contactPoint: {
       "@type": "ContactPoint",
@@ -52,41 +52,29 @@ function orgProvider() {
 }
 
 export function buildServiceSchema(page: ResolvedPage) {
-  const { niche, city, pricing } = page;
+  const { niche, city } = page;
   return {
     "@context": "https://schema.org",
     "@type": "Service",
     name: niche.h1(city.name, city.state),
-    description: `${niche.metaDescription(city.name, city.state)} ${BUSINESS_NAME} connects your request with a local provider serving ${city.name}, ${city.state}.`,
+    description: `${niche.metaDescription(city.name, city.state)} ${BUSINESS_NAME} manages the job from quote to completion in ${city.name}, ${city.state} — done by ESEE directly or by an approved local service partner.`,
     serviceType: niche.serviceType,
     areaServed: { "@type": "City", name: city.name, addressRegion: city.state },
     provider: orgProvider(),
-    offers: {
-      "@type": "Offer",
-      priceRange: `$${pricing.low}-$${pricing.high}`,
-      priceCurrency: "USD",
-    },
   };
 }
 
 /** Service schema for a niche hub — areaServed spans every published city for the niche. */
 export function buildNicheHubServiceSchema(hub: NicheHub) {
-  const { niche, cities, pages } = hub;
-  const low = Math.min(...pages.map((p) => p.pricing.low));
-  const high = Math.max(...pages.map((p) => p.pricing.high));
+  const { niche, cities } = hub;
   return {
     "@context": "https://schema.org",
     "@type": "Service",
     name: niche.label,
-    description: `${niche.blurb} ${BUSINESS_NAME} connects your request with a local provider in the areas we serve.`,
+    description: `${niche.blurb} ${BUSINESS_NAME} manages the job from quote to completion in the areas we serve — done by ESEE directly or by an approved local service partner.`,
     serviceType: niche.serviceType,
     areaServed: cities.map((c) => ({ "@type": "City", name: c.name, addressRegion: c.state })),
     provider: orgProvider(),
-    offers: {
-      "@type": "Offer",
-      priceRange: `$${low}-$${high}`,
-      priceCurrency: "USD",
-    },
   };
 }
 

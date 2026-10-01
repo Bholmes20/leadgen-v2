@@ -29,7 +29,7 @@ export const FOLLOWUP_STEPS: FollowUpStep[] = [
     count: 1,
     subject: 'followup_2',
     message: (firstName, service) =>
-      `Hi ${firstName}, we'd still love to handle your ${service}. Spots fill fast. Call or text ${BUSINESS_PHONE} for a free estimate. - Esee Property Services`,
+      `Hi ${firstName}, we'd still love to handle your ${service}. Call or text ${BUSINESS_PHONE} for a free estimate. - Esee Property Services`,
     nextOffsetDays: 4,
   },
   {
