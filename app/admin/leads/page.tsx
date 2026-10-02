@@ -3,11 +3,13 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import db from '@/lib/db'
 import { StatusSelect } from './StatusSelect'
+import { itemTypeLabel } from '@/lib/pickup'
 
 type Lead = {
   id: string
   created_at: string
   service: string
+  item_type: string | null
   name: string
   phone: string
   address: string
@@ -126,7 +128,7 @@ export default async function AdminLeadsPage({
 
   const leads = db
     .prepare(
-      `SELECT id, created_at, service, name, phone, address, estimate_low, estimate_high, status, photos, next_followup_at,
+      `SELECT id, created_at, service, item_type, name, phone, address, estimate_low, estimate_high, status, photos, next_followup_at,
               niche, city, utm_source
        FROM leads ${sql} ORDER BY ${orderBy}`
     )
@@ -206,7 +208,7 @@ export default async function AdminLeadsPage({
                           </a>
                         </td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                          {serviceLabel(lead.service)}
+                          {lead.item_type ? itemTypeLabel(lead.item_type) : serviceLabel(lead.service)}
                         </td>
                         <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                           {cityLabel(lead.city) || lead.utm_source ? (

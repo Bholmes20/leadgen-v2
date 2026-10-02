@@ -4,6 +4,8 @@ import db from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { v4 as uuidv4 } from 'uuid'
 import { futureISO } from '@/lib/followup'
+import { isValidQuoteStatus, itemTypeLabel } from '@/lib/pickup'
+import { sendQuoteEmail } from '@/lib/email'
 
 const REVIEW_DELAY_DAYS = parseInt(process.env.REVIEW_DELAY_DAYS ?? '7', 10)
 
@@ -41,6 +43,107 @@ export async function updateLeadStatus(id: string, status: string) {
 
 export async function saveNotes(id: string, notes: string) {
   db.prepare('UPDATE leads SET notes = ? WHERE id = ?').run(notes.trim(), id)
+  revalidatePath(`/admin/leads/${id}`)
+}
+
+// Dollars string → integer cents, or null if blank/invalid.
+function dollarsToCents(raw: string | null): number | null {
+  if (!raw || !raw.trim()) return null
+  const n = parseFloat(raw)
+  if (!isFinite(n) || n < 0) return null
+  return Math.round(n * 100)
+}
+
+// Save the customer-facing quote (amount, optional deposit, notes, exclusions) and
+// an explicit quote_status. Saving an amount while still awaiting a quote advances the
+// lead to 'quoted' automatically.
+export async function saveQuote(formData: FormData) {
+  const id = formData.get('lead_id') as string
+  if (!id) return
+
+  const quoteAmount = dollarsToCents(formData.get('quote_amount') as string | null)
+  const depositAmount = dollarsToCents(formData.get('deposit_amount') as string | null)
+  const quoteNotes = ((formData.get('quote_notes') as string) ?? '').trim() || null
+  const quoteExclusions = ((formData.get('quote_exclusions') as string) ?? '').trim() || null
+
+  const requested = (formData.get('quote_status') as string) || ''
+  let quoteStatus: string = isValidQuoteStatus(requested) ? requested : ''
+
+  // If admin saved an amount but left status at an early stage, move it to 'quoted'.
+  const current = db.prepare('SELECT quote_status FROM leads WHERE id = ?').get(id) as
+    | { quote_status: string | null }
+    | undefined
+  if (!quoteStatus) {
+    const cur = current?.quote_status ?? 'submitted'
+    quoteStatus = quoteAmount != null && (cur === 'submitted' || cur === 'needs_quote') ? 'quoted' : cur
+  }
+
+  db.prepare(`
+    UPDATE leads
+    SET quote_amount = ?, deposit_amount = ?, quote_notes = ?, quote_exclusions = ?, quote_status = ?
+    WHERE id = ?
+  `).run(quoteAmount, depositAmount, quoteNotes, quoteExclusions, quoteStatus, id)
+
+  revalidatePath(`/admin/leads/${id}`)
+}
+
+type QuoteLead = {
+  id: string
+  name: string
+  email: string
+  item_type: string | null
+  service: string
+  quote_amount: number | null
+  deposit_amount: number | null
+  quote_notes: string | null
+  quote_exclusions: string | null
+}
+
+// Send the saved quote to the customer by EMAIL only (SMS intentionally not wired yet).
+// Requires a saved quote amount. Logs to communications and advances status to quote_sent.
+export async function sendQuote(formData: FormData) {
+  const id = formData.get('lead_id') as string
+  if (!id) return
+
+  const lead = db.prepare(`
+    SELECT id, name, email, item_type, service, quote_amount, deposit_amount, quote_notes, quote_exclusions
+    FROM leads WHERE id = ?
+  `).get(id) as QuoteLead | undefined
+
+  if (!lead || lead.quote_amount == null) return // nothing to send
+
+  const serviceLabel = lead.item_type ? itemTypeLabel(lead.item_type) : 'pickup'
+
+  try {
+    await sendQuoteEmail({
+      name: lead.name,
+      email: lead.email,
+      serviceLabel,
+      quoteAmountCents: lead.quote_amount,
+      depositAmountCents: lead.deposit_amount,
+      notes: lead.quote_notes,
+      exclusions: lead.quote_exclusions,
+    })
+
+    db.prepare(`
+      INSERT INTO communications (id, lead_id, type, direction, subject, body, status, sent_by)
+      VALUES (?, ?, 'email', 'outbound', 'quote', ?, 'sent', 'admin')
+    `).run(uuidv4(), id, `Quote sent: ${serviceLabel}`)
+
+    db.prepare(`UPDATE leads SET quote_status = 'quote_sent', quote_sent_at = datetime('now') WHERE id = ?`).run(id)
+  } catch (err) {
+    db.prepare(`
+      INSERT INTO communications (id, lead_id, type, direction, subject, body, status, sent_by, error)
+      VALUES (?, ?, 'email', 'outbound', 'quote', ?, 'failed', 'admin', ?)
+    `).run(uuidv4(), id, `Quote send failed: ${serviceLabel}`, err instanceof Error ? err.message : String(err))
+  }
+
+  revalidatePath(`/admin/leads/${id}`)
+}
+
+export async function updateQuoteStatus(id: string, status: string) {
+  if (!isValidQuoteStatus(status)) return
+  db.prepare('UPDATE leads SET quote_status = ? WHERE id = ?').run(status, id)
   revalidatePath(`/admin/leads/${id}`)
 }
 

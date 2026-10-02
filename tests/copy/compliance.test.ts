@@ -38,6 +38,7 @@ const COPY_FILES = [
   "app/junk-removal-augusta-ga/page.tsx",
   "app/leads/new/page.tsx",
   "app/leads/new/LeadForm.tsx",
+  "lib/pickup.ts",
   "lib/adgen/content.ts",
   "lib/email.ts",
   "lib/followup.ts",

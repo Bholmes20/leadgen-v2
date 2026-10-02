@@ -290,6 +290,32 @@ addColumn("leads", "review_send_at", "TEXT");
 // communications — error details for failed sends
 addColumn("communications", "error", "TEXT");
 
+// ─── Pickup / cleanout request flow (PR: Pickup Request Flow v1) ──────────────
+// Additive only — existing leads keep their data; new columns are NULL/default for
+// historical rows. `service` stays the routing key (always 'junk-removal' from the
+// new funnel); `item_type` carries the customer-chosen pickup/cleanout service.
+addColumn("leads", "item_type", "TEXT");
+addColumn("leads", "pickup_location", "TEXT");
+addColumn("leads", "items_outside", "TEXT");          // 'yes' | 'no'
+addColumn("leads", "floor_info", "TEXT");             // floor / stairs / elevator notes
+addColumn("leads", "heavy_items", "INTEGER NOT NULL DEFAULT 0"); // 0/1 heavy or disassembly
+addColumn("leads", "occupancy", "TEXT");              // 'vacant' | 'occupied'
+addColumn("leads", "access_info", "TEXT");            // lockbox / key / gate access
+addColumn("leads", "carpet_rooms", "TEXT");           // rough room count for carpet jobs
+addColumn("leads", "carpet_condition", "TEXT");       // 'normal' | 'wet' | 'pet' | 'both'
+addColumn("leads", "preferred_date", "TEXT");         // customer-preferred pickup date
+addColumn("leads", "preferred_window", "TEXT");       // 'flexible' | 'morning' | 'afternoon'
+
+// leads — quote lifecycle (customer-facing quote set by admin after photo review)
+addColumn("leads", "quote_amount", "INTEGER");        // cents
+addColumn("leads", "deposit_amount", "INTEGER");      // cents, optional
+addColumn("leads", "quote_notes", "TEXT");            // included work
+addColumn("leads", "quote_exclusions", "TEXT");       // what's not included
+addColumn("leads", "quote_status", "TEXT NOT NULL DEFAULT 'submitted'");
+addColumn("leads", "quote_sent_at", "TEXT");
+// payment lifecycle — placeholder for later Stripe work
+addColumn("leads", "payment_status", "TEXT NOT NULL DEFAULT 'none'");
+
 // leads — communication-safety counters (P0). These start at 0 for every
 // existing lead; the ~22k historical failed communications do NOT initialize
 // or inflate them. Attempts are only incremented by NEW automation attempts.

@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import db from '@/lib/db'
 import { matchContractors } from '@/lib/matching'
-import { assignContractor, updateAssignment, saveNotes } from '../actions'
+import { assignContractor, updateAssignment, saveNotes, saveQuote, sendQuote } from '../actions'
+import { itemTypeLabel, pickupLocationLabel, QUOTE_STATUSES } from '@/lib/pickup'
 
 type Lead = {
   id: string
@@ -35,6 +36,26 @@ type Lead = {
   utm_content: string | null
   referrer_url: string | null
   source_id: string | null
+  // Pickup / cleanout request fields
+  item_type: string | null
+  pickup_location: string | null
+  items_outside: string | null
+  floor_info: string | null
+  heavy_items: number | null
+  occupancy: string | null
+  access_info: string | null
+  carpet_rooms: string | null
+  carpet_condition: string | null
+  preferred_date: string | null
+  preferred_window: string | null
+  // Quote lifecycle
+  quote_amount: number | null
+  deposit_amount: number | null
+  quote_notes: string | null
+  quote_exclusions: string | null
+  quote_status: string | null
+  quote_sent_at: string | null
+  payment_status: string | null
 }
 
 type Assignment = {
@@ -257,6 +278,148 @@ export default async function LeadDetailPage({
               </div>
             </div>
           )}
+        </div>
+
+        {/* Pickup request details */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Pickup Request Details</h2>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <div>
+              <dt className="text-gray-500">Service</dt>
+              <dd className="font-medium">{lead.item_type ? itemTypeLabel(lead.item_type) : '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Pickup location</dt>
+              <dd className="font-medium">{lead.pickup_location ? pickupLocationLabel(lead.pickup_location) : '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">ZIP</dt>
+              <dd className="font-medium">{lead.zip ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Items already outside?</dt>
+              <dd className="font-medium">{lead.items_outside ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Heavy / disassembly</dt>
+              <dd className="font-medium">{lead.heavy_items ? 'Yes' : 'No'}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Preferred timing</dt>
+              <dd className="font-medium">
+                {[lead.preferred_date, lead.preferred_window].filter(Boolean).join(' · ') || '—'}
+              </dd>
+            </div>
+            {lead.floor_info && (
+              <div className="col-span-2">
+                <dt className="text-gray-500">Floor / stairs / elevator</dt>
+                <dd className="font-medium">{lead.floor_info}</dd>
+              </div>
+            )}
+            {(lead.occupancy || lead.access_info) && (
+              <div className="col-span-2">
+                <dt className="text-gray-500">Property access</dt>
+                <dd className="font-medium">
+                  {[lead.occupancy, lead.access_info].filter(Boolean).join(' · ')}
+                </dd>
+              </div>
+            )}
+            {(lead.carpet_rooms || lead.carpet_condition) && (
+              <div className="col-span-2">
+                <dt className="text-gray-500">Carpet</dt>
+                <dd className="font-medium">
+                  {[lead.carpet_rooms, lead.carpet_condition].filter(Boolean).join(' · ')}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+
+        {/* Quote */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700">Quote</h2>
+            <span className="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full uppercase">
+              {lead.quote_status ?? 'submitted'}
+            </span>
+          </div>
+          {lead.quote_sent_at && (
+            <p className="text-xs text-green-700 mb-3">Quote email sent {fmtDatetime(lead.quote_sent_at)}</p>
+          )}
+
+          <form action={saveQuote} className="space-y-3">
+            <input type="hidden" name="lead_id" value={lead.id} />
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-xs text-gray-500">Quote amount ($)</span>
+                <input
+                  name="quote_amount"
+                  type="number" min="0" step="0.01"
+                  defaultValue={lead.quote_amount != null ? (lead.quote_amount / 100).toFixed(2) : ''}
+                  placeholder="0.00"
+                  className="mt-0.5 block w-full text-sm rounded border border-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-500">Deposit ($, optional)</span>
+                <input
+                  name="deposit_amount"
+                  type="number" min="0" step="0.01"
+                  defaultValue={lead.deposit_amount != null ? (lead.deposit_amount / 100).toFixed(2) : ''}
+                  placeholder="0.00"
+                  className="mt-0.5 block w-full text-sm rounded border border-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                />
+              </label>
+            </div>
+            <label className="block">
+              <span className="text-xs text-gray-500">Included work / notes</span>
+              <textarea
+                name="quote_notes" rows={2}
+                defaultValue={lead.quote_notes ?? ''}
+                className="mt-0.5 block w-full text-sm rounded border border-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-gray-500">Exclusions (not included)</span>
+              <textarea
+                name="quote_exclusions" rows={2}
+                defaultValue={lead.quote_exclusions ?? ''}
+                className="mt-0.5 block w-full text-sm rounded border border-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs text-gray-500">Quote status</span>
+              <select
+                name="quote_status"
+                defaultValue={lead.quote_status ?? 'submitted'}
+                className="mt-0.5 block text-sm rounded border border-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+              >
+                {QUOTE_STATUSES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="submit"
+              className="text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Save Quote
+            </button>
+          </form>
+
+          <form action={sendQuote} className="mt-3 pt-3 border-t border-gray-100">
+            <input type="hidden" name="lead_id" value={lead.id} />
+            <button
+              type="submit"
+              disabled={lead.quote_amount == null}
+              className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-40"
+            >
+              Send Quote by Email
+            </button>
+            <span className="ml-2 text-xs text-gray-400">
+              {lead.quote_amount == null ? 'Save a quote amount first' : 'Emails the customer the saved quote'}
+            </span>
+          </form>
         </div>
 
         {/* Attribution */}
