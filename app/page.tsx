@@ -15,10 +15,15 @@ const NICHE_ICON: Record<string, string> = {
   "playset-outdoor-structure-removal": "🛝",
 };
 
+// Home market: Grovetown leads the service-area list; everything else keeps its order.
+const HOME_CITY_SLUG = "grovetown-ga";
+
 export default function Home() {
   const telHref = `tel:${BUSINESS_PHONE.replace(/\D/g, "")}`;
   const niches = getNicheHubs();
-  const cities = getCityHubs();
+  const cities = [...getCityHubs()].sort((a, b) =>
+    a.slug === HOME_CITY_SLUG ? -1 : b.slug === HOME_CITY_SLUG ? 1 : 0,
+  );
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -32,24 +37,25 @@ export default function Home() {
         >
           {BUSINESS_PHONE}
         </a>{" "}
-        · Serving Augusta, GA &amp; the CSRA
+        · Serving Grovetown, GA &amp; the greater Augusta / CSRA area
       </div>
 
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center px-6 py-24 text-center bg-white">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-gray-900 max-w-2xl">
-          Property Cleanouts &amp; Junk Removal in Augusta, GA
+          Grovetown Pickup, Cleanouts &amp; Junk Removal
         </h1>
         <p className="mt-4 text-lg text-gray-500 max-w-xl">
-          {BUSINESS_NAME} handles rental cleanouts, debris removal, and more across
-          the Augusta metro and the CSRA. Get a free quote in under 2 minutes.
+          {BUSINESS_NAME} helps Grovetown landlords, renters, homeowners, and
+          Fort Eisenhower-area movers get unwanted items cleared out fast. Request
+          curbside pickup, cleanout help, or carpet removal and get a quote from photos.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center">
           <Link
             href="/leads/new"
             className="inline-block bg-green-600 text-white text-lg font-semibold px-8 py-4 rounded-full hover:bg-green-700 transition-colors"
           >
-            Get a Free Quote
+            Request Pickup
           </Link>
           <a
             href={telHref}
@@ -67,8 +73,10 @@ export default function Home() {
             Specialized Property Services
           </h2>
           <p className="text-gray-500 text-center max-w-xl mx-auto mb-10">
-            Tell us about your job and we&apos;ll get back to you with a free quote.
-            Explore the services we cover:
+            From curbside pickup and bulk-item, mattress, and furniture hauling to
+            full rental cleanouts, tenant trash-outs, and carpet removal — tell us
+            about your job and we&apos;ll get back to you with a free quote. Explore
+            the services we cover:
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {niches.map(({ niche }) => (
@@ -93,11 +101,11 @@ export default function Home() {
       <section className="bg-white py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Serving the Augusta, GA Metro &amp; the CSRA
+            Serving Grovetown &amp; the Augusta, GA Metro / CSRA
           </h2>
           <p className="text-gray-500 mb-10 max-w-xl mx-auto">
-            We serve property owners across the CSRA. Choose your area to see what&apos;s
-            available near you:
+            Based in Grovetown and serving property owners across the greater Augusta
+            area and the CSRA. Choose your area to see what we cover near you:
           </p>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-left max-w-lg mx-auto">
             {cities.map(({ city }) => (
@@ -141,7 +149,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-center sm:text-left">
               <p className="font-semibold text-gray-600">{BUSINESS_NAME}</p>
-              <p>Augusta, GA &amp; the surrounding CSRA</p>
+              <p>Grovetown, GA &amp; the greater Augusta / CSRA area</p>
               <a href={telHref} className="hover:text-green-600 transition-colors">
                 {BUSINESS_PHONE}
               </a>
