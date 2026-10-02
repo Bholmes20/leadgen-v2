@@ -13,11 +13,11 @@ export const LOCAL_CONTENT: LocalContent[] = [
     niche: "rental-property-cleanout",
     city: "augusta-ga",
     intro:
-      "Turning over a rental in Augusta means getting a unit rent-ready before you lose a month of income — whether it's a student rental near Augusta University, an older duplex in Harrisburg, or a downtown apartment by the medical district. We clear out everything a departing tenant left behind so you can paint, clean, and re-list fast. Serving all of Richmond County, from Summerville to south Augusta.",
+      "Turning over a rental in Augusta means getting a unit rent-ready before you lose a month of income — whether it's a student rental near Augusta University, an older duplex in Harrisburg, a downtown apartment by the medical district, or a PCS move-out in the Fort Eisenhower area of south Richmond County. We clear out everything a departing tenant left behind — furniture, mattresses, boxes, and garage items — so you can paint, clean, and re-list fast. Serving all of Richmond County, from Summerville to south Augusta.",
     localFaqs: [
       {
         q: "How quickly can you clear an Augusta rental between tenants?",
-        a: "We move quickly on single-unit Augusta cleanouts. If you're turning over a student rental near Augusta University on a tight academic-calendar deadline, tell us your relist date and we'll prioritize the schedule.",
+        a: "We move quickly on single-unit Augusta cleanouts. If you're turning over a student rental near Augusta University on a tight academic-calendar deadline — or a Fort Eisenhower-area PCS move-out — tell us your relist date and we'll prioritize the schedule.",
       },
       {
         q: "Do you serve rentals across all of Augusta?",
@@ -131,11 +131,11 @@ export const LOCAL_CONTENT: LocalContent[] = [
     niche: "rental-property-cleanout",
     city: "grovetown-ga",
     intro:
-      "Grovetown's rapid growth near Fort Eisenhower means a lot of newer rentals cycling through military and civilian tenants. We get your Grovetown unit cleared and rent-ready between tenants, handling whatever furniture, appliances, and clutter got left behind. Serving Canterbury Farms, Euchee Creek, and the Wrightsboro Road corridor.",
+      "Grovetown's rapid growth in the Fort Eisenhower area means a steady cycle of PCS move-outs and rental turnovers. When a military family relocates, we clear the whole unit — leftover furniture, mattresses, boxes, and garage items — and haul it away so it's rent-ready for the next tenant. If you can set items at the curb, that's usually the quickest for us to quote. Serving Canterbury Farms, Euchee Creek, and the Wrightsboro Road corridor.",
     localFaqs: [
       {
-        q: "Can you turn a Grovetown rental around on a tight timeline?",
-        a: "Yes — with the frequent PCS-driven turnover around Fort Eisenhower, fast Grovetown cleanouts are our norm. Tell us your timeline and we'll work to it, confirming scope and price before any work begins.",
+        q: "Do you handle PCS move-out cleanouts for Grovetown rentals near Fort Eisenhower?",
+        a: "Yes — Fort Eisenhower-area PCS move-outs and rental turnovers are a big part of what we do in Grovetown. Tell us your move date and we'll work to it, confirming scope and price before any work begins. We're an independent local property-services company serving the Fort Eisenhower area.",
       },
     ],
   },
@@ -143,11 +143,11 @@ export const LOCAL_CONTENT: LocalContent[] = [
     niche: "tenant-trash-out",
     city: "grovetown-ga",
     intro:
-      "Grovetown sits right next to Fort Eisenhower, so rentals here see constant military turnover and the occasional rushed or abandoned move-out. We handle full trash-outs on Grovetown rentals — including units left in bad shape after a sudden PCS or eviction — so you can turn the property around fast for the next tenant.",
+      "In the Fort Eisenhower area, Grovetown rentals see constant PCS turnover and the occasional rushed or abandoned move-out. We handle full trash-outs on Grovetown rentals — furniture, mattresses, boxes, garage items, and whatever's left behind after a sudden PCS or eviction — so you can turn the property around for the next tenant. Curbside staging, when it's possible, is the quickest for us to quote.",
     localFaqs: [
       {
-        q: "Do you handle Grovetown rentals left behind after a PCS or military move-out?",
-        a: "Yes. With Fort Eisenhower next door, we're used to Grovetown turnovers on short notice, including units a service member left in a hurry. Tell us your timeline and we'll work to it.",
+        q: "Do you handle Grovetown rentals left behind after a PCS move-out?",
+        a: "Yes. In the Fort Eisenhower area we regularly clear units a service member left in a hurry — full of furniture, mattresses, and boxes. Tell us your timeline and we'll work to it, confirming scope and price before any work begins.",
       },
     ],
   },

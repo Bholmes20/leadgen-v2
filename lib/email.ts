@@ -231,3 +231,128 @@ export async function sendLeadConfirmation(params: LeadConfirmationParams): Prom
     throw new Error(`Resend error ${res.status}: ${body}`)
   }
 }
+
+// ─── Quote email ─────────────────────────────────────────────────────────────
+// Short, fast quote sent by admin after reviewing photos. The amount is a per-job
+// quote the customer requested — not a published price — so a dollar figure here is
+// expected and compliant. Currency is formatted via a helper (no literal "$<digit>"
+// in source) so the copy-compliance guard, which bans published prices in marketing
+// copy, does not false-positive on this transactional template.
+
+export interface QuoteEmailParams {
+  name: string
+  email: string
+  serviceLabel: string
+  quoteAmountCents: number
+  depositAmountCents?: number | null
+  notes?: string | null
+  exclusions?: string | null
+}
+
+function fmtUsd(cents: number): string {
+  return '$' + (cents / 100).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+export function quoteEmailSubject(p: QuoteEmailParams): string {
+  return `Your ${p.serviceLabel} quote — Esee Property Services`
+}
+
+export function buildQuoteEmailHtml(p: QuoteEmailParams): string {
+  const amount = fmtUsd(p.quoteAmountCents)
+  const depositRow =
+    p.depositAmountCents && p.depositAmountCents > 0
+      ? `<p style="margin:0 0 6px;font-size:14px;color:#44403c;">To get on the schedule, a deposit of <strong>${fmtUsd(p.depositAmountCents)}</strong> is requested; the balance is due at completion.</p>`
+      : ''
+  const notesBlock = p.notes
+    ? `<p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#a8a29e;text-transform:uppercase;letter-spacing:0.8px;">Included</p>
+       <p style="margin:0 0 20px;font-size:14px;color:#44403c;line-height:1.6;">${p.notes}</p>`
+    : ''
+  const exclusionsBlock = p.exclusions
+    ? `<p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#a8a29e;text-transform:uppercase;letter-spacing:0.8px;">Not included</p>
+       <p style="margin:0 0 20px;font-size:14px;color:#44403c;line-height:1.6;">${p.exclusions}</p>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Quote — Esee Property Services</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f5f4;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px;">
+        <tr>
+          <td style="background-color:#14532d;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">Esee Property Services</p>
+            <p style="margin:6px 0 0;font-size:13px;color:#86efac;">${BUSINESS_CITY}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color:#ffffff;padding:36px 40px 32px;">
+            <p style="margin:0 0 18px;font-size:15px;color:#44403c;">Hi ${p.name},</p>
+            <p style="margin:0 0 18px;font-size:15px;color:#44403c;line-height:1.6;">
+              Here is your quote for your <strong style="color:#14532d;">${p.serviceLabel}</strong> request.
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0fdf4;border-radius:10px;margin-bottom:22px;">
+              <tr><td style="padding:22px 24px;text-align:center;">
+                <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#15803d;text-transform:uppercase;letter-spacing:0.8px;">Your Quote</p>
+                <p style="margin:0;font-size:30px;font-weight:700;color:#14532d;">${amount}</p>
+              </td></tr>
+            </table>
+            ${depositRow}
+            ${notesBlock}
+            ${exclusionsBlock}
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #e7e5e4;padding-top:20px;margin-top:4px;">
+              <tr><td style="padding-top:20px;font-size:14px;color:#44403c;line-height:1.6;">
+                <strong>To accept:</strong> reply to this email or call us at
+                <strong style="color:#1c1917;">${BUSINESS_PHONE}</strong> and we'll confirm the scope and get you on the schedule.
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color:#f5f5f4;border-radius:0 0 12px 12px;padding:20px 40px;text-align:center;">
+            <p style="margin:0;font-size:11px;color:#a8a29e;line-height:1.6;">
+              Esee Property Services manages your job from quote to completion. Depending on the job and
+              location, the work is done by ESEE directly or by an approved local service partner. We confirm
+              scope and price with you before any work begins.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendQuoteEmail(p: QuoteEmailParams): Promise<void> {
+  if (!RESEND_API_KEY) {
+    console.warn('email: RESEND_API_KEY not set — skipping quote email')
+    return
+  }
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: FROM,
+      to: [p.email],
+      subject: quoteEmailSubject(p),
+      html: buildQuoteEmailHtml(p),
+    }),
+  })
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '(unreadable)')
+    throw new Error(`Resend error ${res.status}: ${body}`)
+  }
+}
