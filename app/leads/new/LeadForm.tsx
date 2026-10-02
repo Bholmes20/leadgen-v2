@@ -157,8 +157,12 @@ export default function LeadForm() {
           ← Back
         </Link>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Request a Pickup Quote</h1>
-        <p className="text-gray-500 mb-8">
+        <p className="text-gray-500 mb-2">
           Tell us what needs to go and add a few photos — we{"'"}ll review and send your quote fast.
+        </p>
+        <p className="text-gray-500 mb-8">
+          PCS move-out or rental turnover in the Fort Eisenhower area? We handle cleanouts and
+          curbside pickup of furniture, mattresses, boxes, garage items, and other bulk items.
         </p>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">

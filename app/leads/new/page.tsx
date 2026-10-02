@@ -7,12 +7,12 @@ import LeadForm from "./LeadForm";
 export const metadata: Metadata = {
   title: "Request a Free Quote",
   description:
-    "Tell us about your job and upload a few photos — we'll get back to you with a free quote for the Augusta, GA area and the CSRA. No obligation.",
+    "Pickup and cleanout quotes for Grovetown and the Fort Eisenhower area. PCS move-outs, rental cleanouts, and curbside pickup of furniture, mattresses, boxes, and bulk items. Upload a few photos and we'll get back to you with a free quote. No obligation.",
   alternates: { canonical: "/leads/new" },
   openGraph: {
     title: "Request a Free Quote | Esee Property Services",
     description:
-      "Tell us about your job and we'll get back to you with a free quote for the Augusta, GA area.",
+      "Pickup and cleanout quotes for Grovetown and the Fort Eisenhower area — PCS move-outs, rental cleanouts, and bulk item pickup. Free quote.",
     url: "/leads/new",
     type: "website",
   },

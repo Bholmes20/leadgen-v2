@@ -97,6 +97,49 @@ test("the curbside copy reads as specified", () => {
   assert.ok(CURBSIDE_COPY.toLowerCase().includes("fastest"));
 });
 
+// ── Fort Eisenhower / PCS niche ──────────────────────────────────────────────
+
+test("Fort Eisenhower / PCS language is present on the key Grovetown surfaces", () => {
+  const content = read("lib/seo/content.ts");
+  const cities = read("lib/seo/cities.ts");
+  const form = read("app/leads/new/LeadForm.tsx");
+  const newPage = read("app/leads/new/page.tsx");
+
+  for (const [name, src] of [["content", content], ["cities", cities], ["form", form], ["page", newPage]] as const) {
+    assert.ok(/fort eisenhower/i.test(src), `${name} should use "Fort Eisenhower" language`);
+  }
+  assert.ok(/\bPCS\b/.test(content), "SEO content leans into PCS move-outs");
+  assert.ok(/\bPCS\b/.test(form), "pickup form mentions PCS move-outs");
+  // leans into the bulky-item niche
+  assert.ok(/mattress/i.test(form) && /bulk/i.test(form), "form names mattresses + bulk items");
+});
+
+test("Fort Eisenhower copy makes no prohibited military/timeline/same-day claim", () => {
+  const files = [
+    "lib/seo/content.ts",
+    "lib/seo/cities.ts",
+    "app/leads/new/LeadForm.tsx",
+    "app/leads/new/page.tsx",
+  ];
+  const prohibited: RegExp[] = [
+    /\bon[\s-]?post\b/i,                         // on-post service
+    /\bon[\s-]?base\b/i,                         // on-base service
+    /\bofficial(?:ly)?\s+military\b/i,           // official military partnership
+    /\bmilitary\s+partner(?:ship)?\b/i,
+    /\bendorsed by\b/i,
+    /\baffiliated with\b/i,
+    /\bguaranteed?\b[^.]{0,40}\bpcs\b/i,         // guaranteed PCS timeline
+    /\bpcs\b[^.]{0,40}\bguarantee/i,
+    /\bsame[\s-]?day\b/i,                        // same-day pickup
+  ];
+  for (const f of files) {
+    const src = read(f);
+    for (const re of prohibited) {
+      assert.equal(src.match(re), null, `${f} must not match ${re}`);
+    }
+  }
+});
+
 test("the lead API no longer references landscaping and routes via the shared service", () => {
   const route = read("app/api/leads/route.ts");
   assert.ok(!/landscaping/i.test(route), "API route must not reference landscaping");

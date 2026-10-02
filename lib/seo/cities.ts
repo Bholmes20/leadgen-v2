@@ -56,7 +56,7 @@ export const CITIES: City[] = [
     ],
     nearby: ["evans-ga", "martinez-ga", "augusta-ga"],
     blurb:
-      "One of the fastest-growing cities in the CSRA, next to Fort Eisenhower — lots of newer construction and frequent PCS military moves.",
+      "One of the fastest-growing cities in the CSRA, in the Fort Eisenhower area — with frequent PCS move-outs and rental turnovers, and plenty of furniture, mattresses, boxes, and bulk items that need to go when military families relocate.",
   },
   {
     slug: "martinez-ga",

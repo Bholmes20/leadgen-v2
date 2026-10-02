@@ -28,6 +28,7 @@ const COPY_FILES = [
   "lib/seo/schema.ts",
   "lib/seo/niches.ts",
   "lib/seo/content.ts",
+  "lib/seo/cities.ts",
   "components/seo/LandingPage.tsx",
   "components/seo/NicheHub.tsx",
   "components/seo/CityHub.tsx",
@@ -87,8 +88,16 @@ const BANNED: Rule[] = [
 
   // Unsupported license / insurance / guarantee claims about ESEE. (Referring to a
   // third-party "licensed arborist/abatement contractor" as out of scope is fine, so
-  // the bare word "licensed" is intentionally not banned.)
+  // the bare word "licensed" is intentionally not banned.) The guarantee clause also
+  // covers "guaranteed PCS timelines" — we never guarantee a move-out timeline.
   { label: "unsupported license / insurance / guarantee claim", re: /\blicensed (?:and|&) insured\b|\bfully (?:licensed|insured)\b|\bwe(?:'|’)?re licensed\b|\bwe are licensed\b|\bguarantee/i },
+
+  // Military / Fort Eisenhower over-claims. We lean into the "near Fort Eisenhower" /
+  // "Fort Eisenhower-area" PCS niche, but must NOT imply on-post/on-base service, an
+  // official military partnership, or any endorsement/affiliation with the installation.
+  // ("near Fort Eisenhower", "Fort Eisenhower-area", "military families", "PCS move-out"
+  // are all fine and do not match.)
+  { label: "military over-claim (on-post / official partnership / endorsement)", re: /\bon[\s-]?post\b|\bon[\s-]?base\b|\bofficial(?:ly)?\s+military\b|\bmilitary\s+partner(?:ship)?\b|\bendorsed by\b|\baffiliated with\b|\b(?:dod|army|military)[\s-]?(?:approved|endorsed|official)\b/i },
 ];
 
 const PRICE_RE = /\$\s?\d/;
