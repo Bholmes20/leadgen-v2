@@ -128,9 +128,9 @@ export default function LeadForm() {
       <main className="min-h-screen flex items-center justify-center px-6 bg-white">
         <div className="text-center max-w-md">
           <div className="text-5xl mb-4">✅</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Request Received!</h1>
-          <p className="text-gray-500 mb-6">
-            We{"'"}ve got your info and will review your photos and details, then send your quote.
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Request received</h1>
+          <p className="text-gray-600 mb-6">
+            We{"'"}ll review your photos and details and send you a quote.
           </p>
           <Link href="/" className="text-green-600 font-medium hover:underline">
             Back to Home
@@ -141,8 +141,12 @@ export default function LeadForm() {
     );
   }
 
+  // Explicit bg + text color so controls stay readable regardless of the OS color
+  // scheme (globals.css flips the inherited body color to near-white under
+  // prefers-color-scheme: dark, which otherwise left select/input text white on these
+  // forced-light fields).
   const inputCls =
-    "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
+    "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500";
   const labelCls = "block text-sm font-semibold text-gray-700 mb-1";
 
   const showAccessDetails = requiresAccessDetails(pickupLocation);
@@ -190,10 +194,10 @@ export default function LeadForm() {
               {PICKUP_LOCATIONS.map((loc) => (
                 <label
                   key={loc.value}
-                  className={`flex items-center gap-3 border-2 rounded-xl px-3 py-2.5 cursor-pointer transition-colors ${
+                  className={`flex items-center gap-3 border-2 rounded-xl px-3 py-2.5 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 ${
                     pickupLocation === loc.value
                       ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
                   <input
@@ -204,7 +208,13 @@ export default function LeadForm() {
                     onChange={() => setPickupLocation(loc.value)}
                     className="accent-green-600"
                   />
-                  <span className="text-sm text-gray-700">{loc.label}</span>
+                  <span
+                    className={`text-sm font-medium ${
+                      pickupLocation === loc.value ? "text-green-800" : "text-gray-900"
+                    }`}
+                  >
+                    {loc.label}
+                  </span>
                   {loc.recommended && (
                     <span className="ml-auto text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
                       Recommended

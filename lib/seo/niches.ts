@@ -1,7 +1,228 @@
 import type { Niche } from "./types";
 
-// The six launch niches. Order here is the canonical display order.
+// Canonical display order. The high-intent Grovetown-area pickup niches lead, ahead of
+// the property-cleanout niches.
 export const NICHES: Niche[] = [
+  {
+    slug: "mattress-removal",
+    label: "Mattress & Box Spring Removal",
+    shortLabel: "mattress removal",
+    blurb: "Haul away old mattresses and box springs — curbside pickup is quickest.",
+    hubIntro:
+      "Old mattresses and box springs are bulky, awkward, and impossible to fit in a car — so they tend to pile up in garages and spare rooms. We pick them up and haul them away for homeowners, renters, and landlords across the Augusta, GA area. Set them at the curb or in the driveway and it's usually the quickest for us to quote. Request a free quote and we'll confirm scope and price before any work begins.",
+    leadService: "junk-removal",
+    serviceType: "Mattress & Box Spring Removal",
+    keywords: [
+      "mattress removal",
+      "mattress disposal",
+      "box spring removal",
+      "mattress pickup",
+      "old mattress haul away",
+    ],
+    pricing: { note: "Priced per piece and by access; firm quote before any work." },
+    whatWeTake: [
+      "Mattresses of every size — twin, full, queen, king, and California king",
+      "Box springs and foundations",
+      "Bed frames, headboards, and footboards",
+      "Futons, sofa-bed mattresses, and crib mattresses",
+      "Bunk beds and daybeds",
+      "Mattress toppers and bedding set out with the mattress",
+    ],
+    whatWeDont: [
+      "Mattresses with an active bed-bug infestation that haven't been sealed in a bag (ask us how to prep)",
+      "Items soaked or contaminated with hazardous material",
+      "Household chemicals, paint, or solvents",
+    ],
+    faqs: [
+      {
+        q: "Do I need to put the mattress at the curb?",
+        a: "Curbside or driveway pickup is encouraged — it's the quickest and easiest for us to quote. If you can safely set the mattress and box spring outside, that's ideal. Indoor removal from a bedroom or upstairs is available too, but confirm it in your quote request so we can plan the carry.",
+      },
+      {
+        q: "Do you take the box spring and bed frame as well?",
+        a: "Yes — we take the mattress, the box spring or foundation, and the bed frame, headboard, and footboard if you want them gone too. Just list everything in your request so the quote covers it all.",
+      },
+      {
+        q: "Can you remove a mattress from an upstairs bedroom or apartment?",
+        a: "Often yes, but indoor and upstairs removal depends on the stairs and access, so it's quoted case by case. Note the floor and whether there are stairs or an elevator in your request and we'll confirm it in the quote.",
+      },
+      {
+        q: "How do you price mattress removal?",
+        a: "By the number of pieces and how easy they are to reach. A single mattress and box spring left curbside is at the low end; multiple beds carried down from inside is more. Send a photo and we'll give you a firm quote before any work begins.",
+      },
+    ],
+    h1: (city, state) => `Mattress & Box Spring Removal in ${city}, ${state}`,
+    metaTitle: (city, state) => `Mattress Removal in ${city}, ${state}`,
+    metaDescription: (city, state) =>
+      `Old mattress and box spring removal in ${city}, ${state}. Curbside pickup encouraged; indoor removal by quote. Great for PCS moves, move-outs, and bed replacements. Quote from photos.`,
+    overview: (city) =>
+      `Mattress removal is a simple pickup-and-haul: we take your old mattress, the box spring or foundation, and the bed frame if you want it gone, and haul it away from your ${city} home. Curbside or driveway pickup is encouraged and quickest to quote; indoor or upstairs removal is available when you confirm it in the quote. It's ideal for PCS moves, apartment move-outs, rental turnovers, and old bed replacements.`,
+  },
+  {
+    slug: "furniture-removal",
+    label: "Furniture & Couch Removal",
+    shortLabel: "furniture removal",
+    blurb: "Pick up and haul away couches, sofas, and heavy furniture.",
+    hubIntro:
+      "Couches, sectionals, and heavy furniture are the items that are hardest to get rid of on your own. We pick them up and haul them off for homeowners, renters, and landlords across the Augusta, GA area — from a single couch to a houseful. Curbside or driveway pickup is usually quickest to quote. Request a free quote and we'll confirm scope and price before any work begins.",
+    leadService: "junk-removal",
+    serviceType: "Furniture & Couch Removal",
+    keywords: [
+      "furniture removal",
+      "couch removal",
+      "sofa pickup",
+      "furniture disposal",
+      "old furniture haul away",
+    ],
+    pricing: { note: "Priced by piece count, size, and access; firm quote before any work." },
+    whatWeTake: [
+      "Couches, sofas, loveseats, and sectionals",
+      "Recliners, armchairs, and ottomans",
+      "Dressers, nightstands, and wardrobes",
+      "Dining tables, chairs, and china cabinets",
+      "Desks, bookshelves, and entertainment centers",
+      "Coffee tables, end tables, and patio furniture",
+    ],
+    whatWeDont: [
+      "Furniture with an active bed-bug infestation that hasn't been sealed or wrapped (ask us how to prep)",
+      "Items contaminated with hazardous material",
+      "Household chemicals, paint, or solvents",
+    ],
+    faqs: [
+      {
+        q: "Can you take a heavy sectional or a sleeper sofa?",
+        a: "Yes — sectionals, sleeper sofas, and oversized recliners are routine. If a piece needs to come apart to get through a doorway or down the stairs, we handle that on site; just flag it in your request so the quote accounts for it.",
+      },
+      {
+        q: "Do I have to move the furniture outside first?",
+        a: "No, but curbside or driveway pickup is encouraged because it's the quickest and easiest to quote. If the furniture is still inside or upstairs, note the floor and any stairs in your request and we'll confirm the carry in your quote.",
+      },
+      {
+        q: "Can you pick up just one couch?",
+        a: "Yes — a single-item couch or furniture pickup is completely fine, and so is a full house of furniture. Tell us what you've got and we'll quote it.",
+      },
+      {
+        q: "How is furniture removal priced?",
+        a: "By how many pieces, how big and heavy they are, and how easy they are to reach. A couch set at the curb is at the low end; several heavy pieces carried from inside is more. Send a photo for a firm quote before any work begins.",
+      },
+    ],
+    h1: (city, state) => `Furniture & Couch Removal in ${city}, ${state}`,
+    metaTitle: (city, state) => `Furniture & Couch Removal in ${city}, ${state}`,
+    metaDescription: (city, state) =>
+      `Couch, sofa, and furniture removal in ${city}, ${state}. From a single couch to a whole house — curbside pickup encouraged, indoor by quote. Quote from photos.`,
+    overview: (city) =>
+      `Furniture removal is a pickup-and-haul for the bulky pieces you're done with — couches, sofas, sectionals, recliners, dressers, tables, and desks — cleared out of your ${city} home and hauled away. Curbside or driveway pickup is encouraged and quickest to quote; indoor or upstairs removal is available when you confirm it in the quote. It's a fit for PCS moves, apartment move-outs, rental turnovers, and furniture upgrades.`,
+  },
+  {
+    slug: "appliance-removal",
+    label: "Appliance Removal",
+    shortLabel: "appliance removal",
+    blurb: "Haul off washers, dryers, stoves, and other large appliances.",
+    hubIntro:
+      "When an appliance dies or gets replaced, the old one is heavy and awkward to move. We haul off washers, dryers, stoves, dishwashers, and other large appliances for homeowners, renters, and landlords across the Augusta, GA area. Curbside, garage, or driveway pickup is usually quickest to quote. Request a free quote and we'll confirm scope and price before any work begins.",
+    leadService: "junk-removal",
+    serviceType: "Appliance Removal & Haul-Away",
+    keywords: [
+      "appliance removal",
+      "washer dryer removal",
+      "old appliance haul away",
+      "appliance pickup",
+      "large appliance disposal",
+    ],
+    pricing: { note: "Priced per appliance and by access; firm quote before any work." },
+    whatWeTake: [
+      "Washers and dryers",
+      "Stoves, ovens, and ranges",
+      "Dishwashers and built-in microwaves",
+      "Water heaters",
+      "Trash compactors and garbage disposals",
+      "Countertop microwaves and small appliances",
+    ],
+    whatWeDont: [
+      "Refrigerators, freezers, and window AC units where the refrigerant hasn't been recovered — certified handling may be required first; note it and we'll advise in your quote",
+      "Appliances leaking oil, fuel, or hazardous fluid",
+      "Hazardous waste, chemicals, or solvents",
+    ],
+    faqs: [
+      {
+        q: "Do you disconnect the appliance, or should it be unhooked already?",
+        a: "It's quickest if the appliance is already unhooked and pulled away from the wall. We can handle basic disconnects on site in many cases — note it in your request so the quote reflects it. For gas lines and permanent plumbing, have a licensed tradesperson disconnect first.",
+      },
+      {
+        q: "Can you take a refrigerator or freezer?",
+        a: "Refrigerators, freezers, and window AC units contain refrigerant that may need to be recovered by a certified technician before disposal. Tell us about the unit in your request and we'll advise on the handling and confirm it in your quote — we don't make promises about refrigerant work sight unseen.",
+      },
+      {
+        q: "Do you take washers and dryers from the laundry room?",
+        a: "Yes. Curbside or garage pickup is quickest to quote, but if the washer and dryer are still in an interior laundry room or upstairs, note the floor and any stairs in your request and we'll confirm the carry in your quote.",
+      },
+      {
+        q: "How is appliance removal priced?",
+        a: "By the number of appliances and how easy they are to reach. One unit in the garage is at the low end; several carried out from inside is more. Send a photo and we'll give you a firm quote before any work begins.",
+      },
+    ],
+    h1: (city, state) => `Appliance Removal in ${city}, ${state}`,
+    metaTitle: (city, state) => `Appliance Removal in ${city}, ${state}`,
+    metaDescription: (city, state) =>
+      `Old appliance removal in ${city}, ${state} — washers, dryers, stoves, dishwashers, and more. Curbside or garage pickup encouraged. Quote from photos, firm price before any work.`,
+    overview: (city) =>
+      `Appliance removal is a haul-away for the heavy machines you're replacing — washers, dryers, stoves, dishwashers, water heaters, and more — taken out of your ${city} home and hauled off. Curbside, garage, or driveway pickup is encouraged and quickest to quote; interior or upstairs removal is available when you confirm it in the quote. Refrigerators, freezers, and AC units contain refrigerant, so tell us about those and we'll advise on handling in your quote.`,
+  },
+  {
+    slug: "bulk-item-pickup",
+    label: "Bulk Item Pickup",
+    shortLabel: "bulk item pickup",
+    blurb: "One or a few large, heavy items picked up and hauled away.",
+    hubIntro:
+      "Sometimes it's not a whole cleanout — just one or two big, heavy items that won't fit in your car and won't go out with the regular trash. We pick up bulk items for homeowners, renters, and landlords across the Augusta, GA area and haul them off. Set them curbside or in the driveway and it's usually the quickest for us to quote. Request a free quote and we'll confirm scope and price before any work begins.",
+    leadService: "junk-removal",
+    serviceType: "Bulk Item Pickup & Haul-Away",
+    keywords: [
+      "bulk item pickup",
+      "bulk trash pickup",
+      "large item removal",
+      "bulky waste pickup",
+      "single item haul away",
+    ],
+    pricing: { note: "Priced by number and size of items and access; firm quote before any work." },
+    whatWeTake: [
+      "Mattresses, box springs, and furniture",
+      "Appliances like washers, dryers, and stoves",
+      "Exercise equipment and treadmills",
+      "Grills, patio furniture, and planters",
+      "Old TVs, electronics, and small e-waste",
+      "Rugs, bagged clutter, and odds and ends set out with the big items",
+    ],
+    whatWeDont: [
+      "Refrigerant-containing fridges, freezers, or AC units until the refrigerant is handled — note it and we'll advise in your quote",
+      "Hazardous waste, chemicals, paint, or solvents",
+      "Full demolition or construction debris loads (ask about renovation debris removal)",
+    ],
+    faqs: [
+      {
+        q: "What counts as a bulk item?",
+        a: "Any single large or heavy item that's awkward to move and won't go out with your normal trash — a mattress, a couch, a treadmill, a grill, an old TV, a washer or dryer. If you've got one item or a small handful, bulk item pickup is the fit.",
+      },
+      {
+        q: "Can I schedule a pickup for just one item?",
+        a: "Yes — single-item pickups are welcome, and so are small batches of a few items. Tell us what you've got and we'll quote it.",
+      },
+      {
+        q: "Should the items be at the curb?",
+        a: "Curbside or driveway pickup is encouraged because it's the quickest and easiest to quote. If an item is still inside or upstairs, note the floor and any stairs in your request and we'll confirm the carry in your quote.",
+      },
+      {
+        q: "How is bulk item pickup priced?",
+        a: "By how many items, how big and heavy they are, and how easy they are to reach. A single item at the curb is at the low end; several heavy pieces carried from inside is more. Send a photo for a firm quote before any work begins.",
+      },
+    ],
+    h1: (city, state) => `Bulk Item Pickup in ${city}, ${state}`,
+    metaTitle: (city, state) => `Bulk Item Pickup in ${city}, ${state}`,
+    metaDescription: (city, state) =>
+      `Bulk item pickup in ${city}, ${state} — one large item or a small batch picked up and hauled away. Curbside pickup encouraged. Quote from photos, firm price before any work.`,
+    overview: (city) =>
+      `Bulk item pickup is for the one-off big stuff — a single mattress, couch, appliance, treadmill, or grill, or a small handful of heavy items — picked up and hauled away from your ${city} home without booking a full cleanout. Curbside or driveway pickup is encouraged and quickest to quote; indoor or upstairs removal is available when you confirm it in the quote.`,
+  },
   {
     slug: "rental-property-cleanout",
     label: "Rental Property Cleanout",
