@@ -17,7 +17,7 @@ export const LOCAL_CONTENT: LocalContent[] = [
     localFaqs: [
       {
         q: "How quickly can you clear an Augusta rental between tenants?",
-        a: "For most single-unit Augusta cleanouts we can respond same-day or next-day. If you're turning over a student rental near Augusta University on a tight academic-calendar deadline, tell us your relist date and we'll prioritize the schedule.",
+        a: "We move quickly on single-unit Augusta cleanouts. If you're turning over a student rental near Augusta University on a tight academic-calendar deadline, tell us your relist date and we'll prioritize the schedule.",
       },
       {
         q: "Do you serve rentals across all of Augusta?",
@@ -135,7 +135,7 @@ export const LOCAL_CONTENT: LocalContent[] = [
     localFaqs: [
       {
         q: "Can you turn a Grovetown rental around on a tight timeline?",
-        a: "Yes — with the frequent PCS-driven turnover around Fort Eisenhower, fast Grovetown cleanouts are our norm. Same-day and next-day scheduling is often available.",
+        a: "Yes — with the frequent PCS-driven turnover around Fort Eisenhower, fast Grovetown cleanouts are our norm. Tell us your timeline and we'll work to it, confirming scope and price before any work begins.",
       },
     ],
   },

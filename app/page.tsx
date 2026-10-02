@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getNicheHubs, getCityHubs } from "@/lib/seo";
+import { SERVICE_DISCLOSURE } from "@/lib/site";
 
 const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "706-828-1733";
 const BUSINESS_NAME = "Esee Property Services";
@@ -40,9 +41,8 @@ export default function Home() {
           Property Cleanouts &amp; Junk Removal in Augusta, GA
         </h1>
         <p className="mt-4 text-lg text-gray-500 max-w-xl">
-          {BUSINESS_NAME} connects you with local providers for rental cleanouts,
-          debris removal, and more across the Augusta metro and the CSRA. Get a free
-          quote in under 2 minutes.
+          {BUSINESS_NAME} handles rental cleanouts, debris removal, and more across
+          the Augusta metro and the CSRA. Get a free quote in under 2 minutes.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center">
           <Link
@@ -67,8 +67,8 @@ export default function Home() {
             Specialized Property Services
           </h2>
           <p className="text-gray-500 text-center max-w-xl mx-auto mb-10">
-            Tell us about your job and we&apos;ll match you with an available local
-            provider. Explore the services we cover:
+            Tell us about your job and we&apos;ll get back to you with a free quote.
+            Explore the services we cover:
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {niches.map(({ niche }) => (
@@ -96,8 +96,8 @@ export default function Home() {
             Serving the Augusta, GA Metro &amp; the CSRA
           </h2>
           <p className="text-gray-500 mb-10 max-w-xl mx-auto">
-            We connect property owners across the CSRA with local providers. Choose your
-            area to see what&apos;s available near you:
+            We serve property owners across the CSRA. Choose your area to see what&apos;s
+            available near you:
           </p>
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-left max-w-lg mx-auto">
             {cities.map(({ city }) => (
@@ -124,7 +124,7 @@ export default function Home() {
       <section className="bg-green-600 py-16 px-6 text-center">
         <h2 className="text-2xl font-bold text-white mb-4">Ready to get started?</h2>
         <p className="text-green-100 mb-6">
-          Submit your request in under 2 minutes. Upload photos and a local provider will
+          Submit your request in under 2 minutes. Upload photos and we&apos;ll
           get back to you with pricing.
         </p>
         <Link
@@ -156,8 +156,7 @@ export default function Home() {
             </div>
           </div>
           <p className="text-xs text-gray-400 text-center sm:text-left">
-            {BUSINESS_NAME} is a local service-matching platform. We connect your request
-            with a local provider who performs the work and confirms pricing before it begins.
+            {SERVICE_DISCLOSURE}
           </p>
         </div>
       </footer>

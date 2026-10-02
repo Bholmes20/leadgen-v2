@@ -13,7 +13,7 @@
     "fb:health": "tsx --env-file=.env.local scripts/check-token-health.ts",
     "fb:drain": "tsx --env-file=.env.local scripts/fb-drain.ts",
     "db:backup": "bash scripts/backup-db.sh",
-    "test": "tsx --test tests/intel/*.test.ts",
+    "test": "tsx --test tests/intel/*.test.ts tests/copy/*.test.ts",
     "intel:seed": "tsx --env-file=.env.local scripts/seed-intel.ts"
   },
   "dependencies": {

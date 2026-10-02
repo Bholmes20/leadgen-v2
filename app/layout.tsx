@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     template: `%s | ${BUSINESS_NAME}`,
   },
   description:
-    "Esee Property Services connects property owners across the Augusta, GA / CSRA area with local providers for rental cleanouts, junk & debris removal, carpet removal, overgrown-lot cleanup, and more. Get a free quote.",
+    "Esee Property Services handles rental cleanouts, junk & debris removal, carpet removal, overgrown-lot cleanup, and more across the Augusta, GA / CSRA area. We manage your job from quote to completion. Get a free quote.",
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: BUSINESS_NAME,
     title: `${BUSINESS_NAME} | Local Property Cleanout & Removal Services | Augusta, GA`,
     description:
-      "A local service-matching platform for the Augusta, GA area — we connect you with local providers for cleanouts, junk removal, and property services. Free quotes.",
+      "Property services for the Augusta, GA area — cleanouts, junk removal, and more, managed from quote to completion. Free quotes.",
     images: [
       {
         url: "/og-image.jpg",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${BUSINESS_NAME} | Property Cleanout & Removal | Augusta, GA`,
     description:
-      "We connect Augusta-area property owners with local providers for cleanouts, junk removal, and more. Free quotes.",
+      "Property cleanouts, junk removal, and more for the Augusta area — managed from quote to completion. Free quotes.",
     images: ["/og-image.jpg"],
   },
   alternates: {
@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   },
 };
 
-// Site-wide identity: an Organization (service-matching platform), not a LocalBusiness
-// that performs the work. Built from the registry in lib/seo/schema.ts.
+// Site-wide identity: an Organization (property services company), not a LocalBusiness
+// with a single storefront. Built from the registry in lib/seo/schema.ts.
 const organizationSchema = buildOrganizationSchema();
 
 export default function RootLayout({

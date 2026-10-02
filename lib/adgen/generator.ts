@@ -5,10 +5,9 @@ import {
   BODIES,
   CTAS,
   LOCATIONS,
-  URGENCY_PHRASES,
-  SOCIAL_PROOF,
+  QUOTE_PROMPTS,
+  SERVICE_ASSURANCES,
   GRAPHIC_COPY,
-  GRAPHIC_LOCATION_LINES,
 } from "./content";
 import type { GraphicCopy } from "./types";
 
@@ -80,12 +79,12 @@ function assembleFullText(ad: Omit<GeneratedAd, "fullText">): string {
 
   text += `👉 ${ad.cta}`;
 
-  // Occasionally append urgency or social proof
+  // Occasionally append a neutral quote prompt or service assurance
   if (Math.random() < 0.4) {
-    text += `\n\n⚡ ${pick(URGENCY_PHRASES)}`;
+    text += `\n\n👉 ${pick(QUOTE_PROMPTS)}`;
   }
   if (Math.random() < 0.3) {
-    text += `\n✅ ${pick(SOCIAL_PROOF)}`;
+    text += `\n✅ ${pick(SERVICE_ASSURANCES)}`;
   }
 
   return text;

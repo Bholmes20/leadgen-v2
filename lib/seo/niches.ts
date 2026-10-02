@@ -8,7 +8,7 @@ export const NICHES: Niche[] = [
     shortLabel: "rental property cleanout",
     blurb: "Clear out everything a former tenant left so a unit is rent-ready fast.",
     hubIntro:
-      "Between tenants, a rental can be left full of abandoned furniture, appliances, and trash that stands between you and your next lease. We connect landlords and property managers across the Augusta, GA area with local providers who clear out the whole unit and haul it away. Request a quote and we'll match you with an available local pro.",
+      "Between tenants, a rental can be left full of abandoned furniture, appliances, and trash that stands between you and your next lease. We work with landlords and property managers across the Augusta, GA area to clear out the whole unit and haul it away. Request a free quote and we'll confirm scope and price before any work begins.",
     leadService: "junk-removal",
     serviceType: "Rental Property Cleanout",
     keywords: [
@@ -18,7 +18,7 @@ export const NICHES: Niche[] = [
       "apartment cleanout",
       "rental turnover junk removal",
     ],
-    pricing: { low: 175, high: 600, note: "Priced by volume and labor; firm quote before any work." },
+    pricing: { note: "Priced by volume and labor; firm quote before any work." },
     whatWeTake: [
       "Abandoned furniture — sofas, beds, dressers, tables",
       "Mattresses and box springs",
@@ -66,7 +66,7 @@ export const NICHES: Niche[] = [
     shortLabel: "tenant trash-out",
     blurb: "Heavy post-eviction clear-outs — trash, spoiled food, and left-behind debris.",
     hubIntro:
-      "After an eviction or a tenant who skipped, a property can be left in rough shape — full rooms of garbage, soiled furniture, and debris. We match landlords and property-preservation companies in the CSRA with local providers who handle the full trash-out, top to bottom. Tell us about the job and we'll connect you with someone who can take it on.",
+      "After an eviction or a tenant who skipped, a property can be left in rough shape — full rooms of garbage, soiled furniture, and debris. We handle the full trash-out for landlords and property-preservation companies in the CSRA, top to bottom. Tell us about the job and we'll confirm scope and price before any work begins.",
     leadService: "junk-removal",
     serviceType: "Tenant Trash-Out Service",
     keywords: [
@@ -76,7 +76,7 @@ export const NICHES: Niche[] = [
       "REO trash out",
       "property preservation cleanout",
     ],
-    pricing: { low: 250, high: 900, note: "Heavier and dirtier than a standard cleanout; quoted after photos or a walkthrough." },
+    pricing: { note: "Heavier and dirtier than a standard cleanout; quoted after photos or a walkthrough." },
     whatWeTake: [
       "Full-house trash left after an eviction or skip",
       "Spoiled food and refrigerator/freezer contents",
@@ -106,7 +106,7 @@ export const NICHES: Niche[] = [
       },
       {
         q: "How fast can a trash-out be scheduled?",
-        a: "Same-day or next-day is often available. Send a few photos or a walkthrough video and we'll size the job and get you a firm quote quickly.",
+        a: "Send a few photos or a walkthrough video and we'll size the job and get you a firm quote. We confirm scope and price with you before any work begins.",
       },
     ],
     h1: (city, state) => `Tenant Trash-Out in ${city}, ${state}`,
@@ -122,7 +122,7 @@ export const NICHES: Niche[] = [
     shortLabel: "renovation debris removal",
     blurb: "Haul away drywall, flooring, cabinets, and demo debris so crews keep moving.",
     hubIntro:
-      "Renovations and demolition generate debris fast — drywall, torn-out flooring, old cabinets, fixtures, and lumber. We connect contractors and DIY remodelers around Augusta with local providers who haul it off, in a single pickup or throughout a project. Request a quote and we'll match you with an available hauler.",
+      "Renovations and demolition generate debris fast — drywall, torn-out flooring, old cabinets, fixtures, and lumber. We work with contractors and DIY remodelers around Augusta to haul it off, in a single pickup or throughout a project. Request a free quote and we'll confirm scope and price before any work begins.",
     leadService: "junk-removal",
     serviceType: "Construction & Renovation Debris Removal",
     keywords: [
@@ -132,7 +132,7 @@ export const NICHES: Niche[] = [
       "remodel junk removal",
       "contractor debris pickup",
     ],
-    pricing: { low: 200, high: 750, note: "Heavier loads (tile, plaster, countertops) priced by weight and volume." },
+    pricing: { note: "Heavier loads (tile, plaster, countertops) priced by weight and volume." },
     whatWeTake: [
       "Drywall, plaster, and lath",
       "Torn-out flooring, carpet, and tile",
@@ -169,7 +169,7 @@ export const NICHES: Niche[] = [
     h1: (city, state) => `Renovation Debris Removal in ${city}, ${state}`,
     metaTitle: (city, state) => `Renovation Debris Removal in ${city}, ${state}`,
     metaDescription: (city, state) =>
-      `Renovation and demo debris removal in ${city}, ${state}. We haul drywall, flooring, cabinets, and construction waste so your crew keeps moving. Free quote — same-day available.`,
+      `Renovation and demo debris removal in ${city}, ${state}. We haul drywall, flooring, cabinets, and construction waste so your crew keeps moving. Free quote — photos welcome.`,
     overview: (city) =>
       `Renovation debris removal takes the mess demolition leaves behind — drywall, plaster, torn-out flooring and tile, old cabinets and countertops, fixtures, lumber, and trim — and hauls it off your ${city} job site. We can do a single post-demo haul or recurring pickups over the course of a project.`,
   },
@@ -179,7 +179,7 @@ export const NICHES: Niche[] = [
     shortLabel: "carpet removal",
     blurb: "Pull old carpet, padding, and tack strips and leave a clean subfloor.",
     hubIntro:
-      "Before new flooring goes in — or after pet or water damage — old carpet has to come out. We connect homeowners and property managers in the Augusta area with local providers who remove the carpet, padding, and tack strips and haul it all away. Request a quote and we'll match you with someone who can prep your floor.",
+      "Before new flooring goes in — or after pet or water damage — old carpet has to come out. We help homeowners and property managers in the Augusta area remove the carpet, padding, and tack strips and haul it all away. Request a free quote and we'll confirm scope and price before any work begins.",
     leadService: "junk-removal",
     serviceType: "Carpet Removal & Haul-Away",
     keywords: [
@@ -189,7 +189,7 @@ export const NICHES: Niche[] = [
       "carpet tear out",
       "carpet and pad removal",
     ],
-    pricing: { low: 150, high: 500, unit: "job", note: "Usually priced by number and size of rooms, plus stairs." },
+    pricing: { note: "Usually priced by number and size of rooms, plus stairs." },
     whatWeTake: [
       "Wall-to-wall carpet and padding",
       "Tack strips around the perimeter",
@@ -233,7 +233,7 @@ export const NICHES: Niche[] = [
     shortLabel: "overgrown property cleanup",
     blurb: "Reclaim overgrown lots — tall grass, brush, and saplings cut back and hauled off.",
     hubIntro:
-      "An overgrown lot or neglected yard can get out of hand fast, especially on a vacant or inherited property. We connect owners across the CSRA with local providers who cut back the grass, brush, vines, and saplings and haul off what's cleared. Have a code-enforcement deadline? Tell us and we'll match you with someone who can work to it.",
+      "An overgrown lot or neglected yard can get out of hand fast, especially on a vacant or inherited property. We help owners across the CSRA cut back the grass, brush, vines, and saplings and haul off what's cleared. Have a code-enforcement deadline? Tell us and we'll work to it, confirming scope and price before any work begins.",
     leadService: "landscaping",
     serviceType: "Overgrown Lot & Property Cleanup",
     keywords: [
@@ -243,7 +243,7 @@ export const NICHES: Niche[] = [
       "vacant lot cleanup",
       "property overgrowth removal",
     ],
-    pricing: { low: 250, high: 1200, note: "Depends on lot size and how long it's been left; scoped from photos or a visit." },
+    pricing: { note: "Depends on lot size and how long it's been left; scoped from photos or a visit." },
     whatWeTake: [
       "Tall grass and weeds",
       "Brush, briars, and vines",
@@ -288,7 +288,7 @@ export const NICHES: Niche[] = [
     shortLabel: "playset and outdoor structure removal",
     blurb: "Tear down and haul away swing sets, trampolines, sheds, and small structures.",
     hubIntro:
-      "When a playset, trampoline, shed, or old pool has outlived its use, taking it apart is a weekend you'd rather skip. We connect homeowners in the Augusta area with local providers who handle the teardown and haul every piece away. Request a quote and we'll match you with an available pro.",
+      "When a playset, trampoline, shed, or old pool has outlived its use, taking it apart is a weekend you'd rather skip. We help homeowners in the Augusta area with the teardown and haul every piece away. Request a free quote and we'll confirm scope and price before any work begins.",
     leadService: "junk-removal",
     serviceType: "Playset & Outdoor Structure Removal",
     keywords: [
@@ -298,7 +298,7 @@ export const NICHES: Niche[] = [
       "shed removal",
       "above ground pool removal",
     ],
-    pricing: { low: 200, high: 800, note: "We handle the teardown; priced by structure size and haul volume." },
+    pricing: { note: "We handle the teardown; priced by structure size and haul volume." },
     whatWeTake: [
       "Wooden and metal swing sets and playsets",
       "Trampolines",

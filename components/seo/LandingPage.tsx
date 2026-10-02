@@ -7,7 +7,7 @@ import {
   buildBreadcrumbSchema,
   pageUrl,
 } from "@/lib/seo/schema";
-import { SITE_URL, BUSINESS_NAME } from "@/lib/site";
+import { SITE_URL, SERVICE_DISCLOSURE } from "@/lib/site";
 import AttributionTracker from "@/components/AttributionTracker";
 import { JsonLd, PhoneBar, Breadcrumb, LeadCtaBand, SiteFooter, telHref } from "./chrome";
 
@@ -27,19 +27,18 @@ export default function LandingPage({ page }: { page: ResolvedPage }) {
     },
     {
       n: "2",
-      title: "We match you with a local provider",
-      body: `Based on your location, job type, and scope, we connect your request with an available local provider serving ${city.name} and the surrounding ${city.county} area.`,
+      title: "We confirm scope and price",
+      body: `We review your ${niche.shortLabel} request for ${city.name} and the surrounding ${city.county} area and send you a quote. The work is done by ESEE directly or by an approved local service partner.`,
     },
     {
       n: "3",
       title: "Confirm the quote and schedule",
-      body: "Once you have reviewed the quote, your provider coordinates the work directly with you. Pricing is confirmed before anything begins — no surprises.",
+      body: "Once you approve the quote, we schedule the work and handle it from there. Scope and price are confirmed with you before any work begins.",
     },
   ];
 
-  const disclaimer = `${BUSINESS_NAME} is a local service-matching platform. Submit a request and we connect you with a local provider serving ${cityLabel}. The provider performs the work and confirms your quote before it begins.`;
-  const pricingUnit = pricing.unit ?? "job";
-  const heroSubmitCopy = `You submit your request online — ideally with a few photos — and we match you with an available local provider who covers ${city.name}. No waiting on hold, no runaround.`;
+  const disclaimer = SERVICE_DISCLOSURE;
+  const heroSubmitCopy = `You submit your request online — ideally with a few photos — and we get back to you with a quote for ${city.name}. We handle the job from quote to completion.`;
 
   return (
     <main>
@@ -156,8 +155,8 @@ export default function LandingPage({ page }: { page: ResolvedPage }) {
               ))}
             </ul>
             <p className="mt-4 text-sm text-gray-500">
-              Not sure about a specific item? Note it in your quote request and a provider
-              will advise you directly.
+              Not sure about a specific item? Note it in your quote request and we&apos;ll
+              advise you directly.
             </p>
           </div>
         </div>
@@ -171,12 +170,11 @@ export default function LandingPage({ page }: { page: ResolvedPage }) {
           </h2>
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8">
             <p className="text-lg text-gray-700 mb-4">
-              {`Most ${niche.shortLabel} ${pricingUnit}s in ${city.name} run `}
-              <strong>{`$${pricing.low}–$${pricing.high}`}</strong>
+              {`Every ${niche.shortLabel} job is quoted individually`}
               {pricing.note ? ` — ${pricing.note}` : "."}
             </p>
             <p className="text-gray-700 mb-6">
-              Your local provider confirms the final price before any work begins. Including
+              We confirm scope and price with you before any work begins. Including
               photos with your request is the fastest way to get an accurate quote.
             </p>
             <Link
@@ -287,7 +285,7 @@ export default function LandingPage({ page }: { page: ResolvedPage }) {
 
       <LeadCtaBand
         heading={`Ready to get started in ${city.name}?`}
-        sub="Send a few photos and request a free quote online. You will hear back from a local provider with pricing and next steps."
+        sub="Send a few photos and request a free quote online. We'll get back to you with pricing and next steps."
       />
 
       <SiteFooter

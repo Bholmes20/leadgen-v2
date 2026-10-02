@@ -13,11 +13,11 @@ export interface Faq {
   a: string;
 }
 
+// How a niche is priced, expressed as prose only. We deliberately do NOT carry
+// numeric low/high amounts: every job is quoted individually and we never publish
+// fixed prices or price ranges to customers or search engines.
 export interface PricingBand {
-  low: number;
-  high: number;
-  unit?: string; // display unit, defaults to "job"
-  note?: string;
+  note?: string; // e.g. "Priced by volume and labor; firm quote before any work."
 }
 
 // A service niche (e.g. "Rental Property Cleanout"). City-agnostic — city-specific
