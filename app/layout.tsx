@@ -13,32 +13,32 @@ const BUSINESS_NAME = "Esee Property Services";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${BUSINESS_NAME} | Property Cleanouts & Junk Removal | Augusta, GA`,
+    default: `${BUSINESS_NAME} | Grovetown Pickup, Cleanouts & Junk Removal | GA`,
     template: `%s | ${BUSINESS_NAME}`,
   },
   description:
-    "Esee Property Services handles rental cleanouts, junk & debris removal, carpet removal, overgrown-lot cleanup, and more across the Augusta, GA / CSRA area. We manage your job from quote to completion. Get a free quote.",
+    "Esee Property Services helps Grovetown, GA landlords, renters, homeowners, and Fort Eisenhower-area movers clear out unwanted items — curbside pickup, bulk-item, mattress & furniture hauling, rental cleanouts, tenant trash-outs, and carpet removal. Serving Grovetown and the greater Augusta / CSRA area. Get a quote from photos.",
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: BUSINESS_NAME,
-    title: `${BUSINESS_NAME} | Local Property Cleanout & Removal Services | Augusta, GA`,
+    title: `${BUSINESS_NAME} | Grovetown Pickup, Cleanouts & Junk Removal`,
     description:
-      "Property services for the Augusta, GA area — cleanouts, junk removal, and more, managed from quote to completion. Free quotes.",
+      "Grovetown, GA pickup, cleanouts, and junk removal for landlords, renters, homeowners, and Fort Eisenhower-area movers — managed from quote to completion. Also serving the greater Augusta / CSRA area.",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: `${BUSINESS_NAME} — Property Cleanout & Removal Services in the Augusta, GA area`,
+        alt: `${BUSINESS_NAME} — Pickup, Cleanouts & Junk Removal in Grovetown, GA`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${BUSINESS_NAME} | Property Cleanout & Removal | Augusta, GA`,
+    title: `${BUSINESS_NAME} | Grovetown Pickup, Cleanouts & Junk Removal`,
     description:
-      "Property cleanouts, junk removal, and more for the Augusta area — managed from quote to completion. Free quotes.",
+      "Grovetown, GA pickup, cleanouts, and junk removal — managed from quote to completion. Also serving the greater Augusta / CSRA area.",
     images: ["/og-image.jpg"],
   },
   alternates: {

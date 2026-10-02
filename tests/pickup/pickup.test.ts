@@ -140,6 +140,33 @@ test("Fort Eisenhower copy makes no prohibited military/timeline/same-day claim"
   }
 });
 
+test("the homepage leads with Grovetown pickup positioning", () => {
+  const home = read("app/page.tsx");
+  const layout = read("app/layout.tsx");
+
+  // Hero H1 is Grovetown-first and pickup-led.
+  assert.ok(
+    /Grovetown Pickup, Cleanouts &amp; Junk Removal/.test(home),
+    "homepage H1 should lead with Grovetown pickup/cleanouts/junk removal",
+  );
+  // Primary CTA requests a pickup.
+  assert.ok(/Request Pickup/.test(home), "homepage primary CTA should be 'Request Pickup'");
+  // Leans into the Fort Eisenhower-area / PCS mover niche.
+  assert.ok(/fort eisenhower/i.test(home), "homepage should mention the Fort Eisenhower area");
+  // Grovetown is named before Augusta anywhere Augusta appears (secondary, not the headline).
+  if (/augusta/i.test(home)) {
+    assert.ok(
+      home.search(/grovetown/i) < home.search(/augusta/i),
+      "homepage should mention Grovetown before Augusta",
+    );
+  }
+  // Site-wide (homepage) metadata leads with Grovetown.
+  assert.ok(
+    /default:[^\n]*Grovetown Pickup/.test(layout),
+    "default metadata title should lead with Grovetown pickup positioning",
+  );
+});
+
 test("the lead API no longer references landscaping and routes via the shared service", () => {
   const route = read("app/api/leads/route.ts");
   assert.ok(!/landscaping/i.test(route), "API route must not reference landscaping");
