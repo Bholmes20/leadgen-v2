@@ -19,7 +19,7 @@ export const NICHES: Niche[] = [
       "mattress pickup",
       "old mattress haul away",
     ],
-    pricing: { note: "Priced per piece and by access; firm quote before any work." },
+    pricing: { note: "Priced per piece and by access; confirmed quote before any work." },
     whatWeTake: [
       "Mattresses of every size — twin, full, queen, king, and California king",
       "Box springs and foundations",
@@ -48,7 +48,7 @@ export const NICHES: Niche[] = [
       },
       {
         q: "How do you price mattress removal?",
-        a: "By the number of pieces and how easy they are to reach. A single mattress and box spring left curbside is at the low end; multiple beds carried down from inside is more. Send a photo and we'll give you a firm quote before any work begins.",
+        a: "By the number of pieces and how easy they are to reach. A single mattress and box spring left curbside is at the low end; multiple beds carried down from inside is more. Send a photo and we'll give you a confirmed quote before any work begins.",
       },
     ],
     h1: (city, state) => `Mattress & Box Spring Removal in ${city}, ${state}`,
@@ -74,7 +74,7 @@ export const NICHES: Niche[] = [
       "furniture disposal",
       "old furniture haul away",
     ],
-    pricing: { note: "Priced by piece count, size, and access; firm quote before any work." },
+    pricing: { note: "Priced by piece count, size, and access; confirmed quote before any work." },
     whatWeTake: [
       "Couches, sofas, loveseats, and sectionals",
       "Recliners, armchairs, and ottomans",
@@ -91,7 +91,7 @@ export const NICHES: Niche[] = [
     faqs: [
       {
         q: "Can you take a heavy sectional or a sleeper sofa?",
-        a: "Yes — sectionals, sleeper sofas, and oversized recliners are routine. If a piece needs to come apart to get through a doorway or down the stairs, we handle that on site; just flag it in your request so the quote accounts for it.",
+        a: "Yes — sectionals, sleeper sofas, and oversized recliners are all in scope. If a piece needs to come apart to get through a doorway or down the stairs, we handle that on site; just flag it in your request so the quote accounts for it.",
       },
       {
         q: "Do I have to move the furniture outside first?",
@@ -103,7 +103,7 @@ export const NICHES: Niche[] = [
       },
       {
         q: "How is furniture removal priced?",
-        a: "By how many pieces, how big and heavy they are, and how easy they are to reach. A couch set at the curb is at the low end; several heavy pieces carried from inside is more. Send a photo for a firm quote before any work begins.",
+        a: "By how many pieces, how big and heavy they are, and how easy they are to reach. A couch set at the curb is at the low end; several heavy pieces carried from inside is more. Send a photo for a confirmed quote before any work begins.",
       },
     ],
     h1: (city, state) => `Furniture & Couch Removal in ${city}, ${state}`,
@@ -129,7 +129,7 @@ export const NICHES: Niche[] = [
       "appliance pickup",
       "large appliance disposal",
     ],
-    pricing: { note: "Priced per appliance and by access; firm quote before any work." },
+    pricing: { note: "Priced per appliance and by access; confirmed quote before any work." },
     whatWeTake: [
       "Washers and dryers",
       "Stoves, ovens, and ranges",
@@ -145,12 +145,12 @@ export const NICHES: Niche[] = [
     ],
     faqs: [
       {
-        q: "Do you disconnect the appliance, or should it be unhooked already?",
-        a: "It's quickest if the appliance is already unhooked and pulled away from the wall. We can handle basic disconnects on site in many cases — note it in your request so the quote reflects it. For gas lines and permanent plumbing, have a licensed tradesperson disconnect first.",
+        q: "Does the appliance need to be disconnected before pickup?",
+        a: "Yes — please have appliances disconnected and pulled away from the wall before pickup. For anything on a gas line, water line, built-in installation, or hard-wired electrical connection, have the proper licensed tradesperson disconnect it first so it's ready to go.",
       },
       {
         q: "Can you take a refrigerator or freezer?",
-        a: "Refrigerators, freezers, and window AC units contain refrigerant that may need to be recovered by a certified technician before disposal. Tell us about the unit in your request and we'll advise on the handling and confirm it in your quote — we don't make promises about refrigerant work sight unseen.",
+        a: "Refrigerators, freezers, and window AC units contain refrigerant that may need to be recovered by a certified technician before disposal. Note the unit in your request so we can factor it into your quote — we don't promise refrigerant handling sight unseen.",
       },
       {
         q: "Do you take washers and dryers from the laundry room?",
@@ -158,15 +158,15 @@ export const NICHES: Niche[] = [
       },
       {
         q: "How is appliance removal priced?",
-        a: "By the number of appliances and how easy they are to reach. One unit in the garage is at the low end; several carried out from inside is more. Send a photo and we'll give you a firm quote before any work begins.",
+        a: "By the number of appliances and how easy they are to reach. One unit in the garage is at the low end; several carried out from inside is more. Send a photo and we'll give you a confirmed quote before any work begins.",
       },
     ],
     h1: (city, state) => `Appliance Removal in ${city}, ${state}`,
     metaTitle: (city, state) => `Appliance Removal in ${city}, ${state}`,
     metaDescription: (city, state) =>
-      `Old appliance removal in ${city}, ${state} — washers, dryers, stoves, dishwashers, and more. Curbside or garage pickup encouraged. Quote from photos, firm price before any work.`,
+      `Old appliance removal in ${city}, ${state} — washers, dryers, stoves, dishwashers, and more. Curbside or garage pickup encouraged. Quote from photos — scope and price confirmed before any work.`,
     overview: (city) =>
-      `Appliance removal is a haul-away for the heavy machines you're replacing — washers, dryers, stoves, dishwashers, water heaters, and more — taken out of your ${city} home and hauled off. Curbside, garage, or driveway pickup is encouraged and quickest to quote; interior or upstairs removal is available when you confirm it in the quote. Refrigerators, freezers, and AC units contain refrigerant, so tell us about those and we'll advise on handling in your quote.`,
+      `Appliance removal is a haul-away for the heavy machines you're replacing — washers, dryers, stoves, dishwashers, water heaters, and more — taken out of your ${city} home and hauled off. Please have appliances disconnected before pickup. Curbside, garage, or driveway pickup is encouraged and quickest to quote; interior or upstairs removal is available when you confirm it in the quote. Refrigerators, freezers, and AC units contain refrigerant, so note those in your request and we'll factor the handling into your quote.`,
   },
   {
     slug: "bulk-item-pickup",
@@ -184,7 +184,7 @@ export const NICHES: Niche[] = [
       "bulky waste pickup",
       "single item haul away",
     ],
-    pricing: { note: "Priced by number and size of items and access; firm quote before any work." },
+    pricing: { note: "Priced by number and size of items and access; confirmed quote before any work." },
     whatWeTake: [
       "Mattresses, box springs, and furniture",
       "Appliances like washers, dryers, and stoves",
@@ -194,7 +194,7 @@ export const NICHES: Niche[] = [
       "Rugs, bagged clutter, and odds and ends set out with the big items",
     ],
     whatWeDont: [
-      "Refrigerant-containing fridges, freezers, or AC units until the refrigerant is handled — note it and we'll advise in your quote",
+      "Refrigerant-containing fridges, freezers, or AC units until the refrigerant is handled — note it and we'll factor it into your quote",
       "Hazardous waste, chemicals, paint, or solvents",
       "Full demolition or construction debris loads (ask about renovation debris removal)",
     ],
@@ -213,13 +213,13 @@ export const NICHES: Niche[] = [
       },
       {
         q: "How is bulk item pickup priced?",
-        a: "By how many items, how big and heavy they are, and how easy they are to reach. A single item at the curb is at the low end; several heavy pieces carried from inside is more. Send a photo for a firm quote before any work begins.",
+        a: "By how many items, how big and heavy they are, and how easy they are to reach. A single item at the curb is at the low end; several heavy pieces carried from inside is more. Send a photo for a confirmed quote before any work begins.",
       },
     ],
     h1: (city, state) => `Bulk Item Pickup in ${city}, ${state}`,
     metaTitle: (city, state) => `Bulk Item Pickup in ${city}, ${state}`,
     metaDescription: (city, state) =>
-      `Bulk item pickup in ${city}, ${state} — one large item or a small batch picked up and hauled away. Curbside pickup encouraged. Quote from photos, firm price before any work.`,
+      `Bulk item pickup in ${city}, ${state} — one large item or a small batch picked up and hauled away. Curbside pickup encouraged. Quote from photos — scope and price confirmed before any work.`,
     overview: (city) =>
       `Bulk item pickup is for the one-off big stuff — a single mattress, couch, appliance, treadmill, or grill, or a small handful of heavy items — picked up and hauled away from your ${city} home without booking a full cleanout. Curbside or driveway pickup is encouraged and quickest to quote; indoor or upstairs removal is available when you confirm it in the quote.`,
   },

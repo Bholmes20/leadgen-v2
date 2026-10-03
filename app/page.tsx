@@ -91,7 +91,7 @@ export default function Home() {
             Popular Grovetown Pickups
           </h2>
           <p className="text-gray-500 text-center max-w-xl mx-auto mb-10">
-            The pickups Grovetown and Fort Eisenhower-area movers ask for most — from
+            Pickups we handle across Grovetown and the Fort Eisenhower area — from
             PCS move-outs and rental turnovers to clearing out a single heavy item.
             Pick what fits and request a quote from photos.
           </p>

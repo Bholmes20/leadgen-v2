@@ -136,7 +136,7 @@ export const LOCAL_CONTENT: LocalContent[] = [
     localFaqs: [
       {
         q: "Can you pick up a mattress for a Grovetown PCS move or apartment move-out?",
-        a: "Yes — mattress and box spring pickups for Fort Eisenhower-area PCS moves, apartment move-outs, and rental turnovers are a regular job for us in Grovetown. Set the mattress curbside when you can and we'll confirm scope and price before any work begins.",
+        a: "Yes — we handle mattress and box spring pickups for Fort Eisenhower-area PCS moves, apartment move-outs, and rental turnovers in Grovetown. Set the mattress curbside when you can and we'll confirm scope and price before any work begins.",
       },
     ],
   },
@@ -148,7 +148,7 @@ export const LOCAL_CONTENT: LocalContent[] = [
     localFaqs: [
       {
         q: "Do you remove couches and furniture from Grovetown rentals and apartments?",
-        a: "Yes. Furniture and couch pickup for Grovetown rentals, apartments, and Fort Eisenhower-area PCS move-outs is routine. Tell us what's going and roughly where it is in the unit, and we'll confirm scope and price before any work begins.",
+        a: "Yes. We pick up couches and furniture from Grovetown rentals, apartments, and Fort Eisenhower-area PCS move-outs. Tell us what's going and roughly where it is in the unit, and we'll confirm scope and price before any work begins.",
       },
     ],
   },
@@ -156,11 +156,11 @@ export const LOCAL_CONTENT: LocalContent[] = [
     niche: "appliance-removal",
     city: "grovetown-ga",
     intro:
-      "Rental turnovers and PCS moves in the Fort Eisenhower area leave behind their share of worn-out washers, dryers, and stoves. We haul off large appliances across Grovetown — from Canterbury Farms and Euchee Creek to the newer subdivisions off the Wrightsboro Road corridor. Set the unit curbside or in the garage for the quickest quote. Fridges, freezers, and AC units contain refrigerant, so tell us about those and we'll advise on handling in your quote.",
+      "Rental turnovers and PCS moves in the Fort Eisenhower area leave behind their share of worn-out washers, dryers, and stoves. We haul off large appliances across Grovetown — from Canterbury Farms and Euchee Creek to the newer subdivisions off the Wrightsboro Road corridor. Please have appliances disconnected before pickup; curbside or garage placement is quickest to quote. Fridges, freezers, and AC units contain refrigerant, so note those in your request and we'll factor the handling into your quote.",
     localFaqs: [
       {
         q: "Can you haul a washer and dryer from a Grovetown rental?",
-        a: "Yes — washer, dryer, and stove removal for Grovetown rentals and Fort Eisenhower-area move-outs is common. Curbside or garage pickup is quickest; if the units are in an interior laundry room, note that in your request and we'll confirm the carry in your quote.",
+        a: "Yes — we remove washers, dryers, and stoves from Grovetown rentals and Fort Eisenhower-area move-outs. Have them disconnected first; curbside or garage pickup is quickest, and if the units are in an interior laundry room, note that in your request and we'll confirm the carry in your quote.",
       },
     ],
   },
