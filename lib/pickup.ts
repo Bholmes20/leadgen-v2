@@ -143,6 +143,15 @@ export function itemTypeForNiche(niche: string | null | undefined): ItemType | n
       return "tenant-trash-out";
     case "carpet-removal":
       return "carpet-removal";
+    case "mattress-removal":
+      return "mattress-pickup";
+    case "furniture-removal":
+      return "furniture-pickup";
+    case "bulk-item-pickup":
+      return "bulk-item-pickup";
+    case "appliance-removal":
+      // No dedicated appliance item type; appliances route through bulk-item pickup.
+      return "bulk-item-pickup";
     default:
       return null;
   }

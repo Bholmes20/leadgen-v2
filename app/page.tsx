@@ -7,6 +7,10 @@ const BUSINESS_NAME = "Esee Property Services";
 
 // Emoji per niche hub — light visual cue, not keyword text.
 const NICHE_ICON: Record<string, string> = {
+  "mattress-removal": "🛏️",
+  "furniture-removal": "🛋️",
+  "appliance-removal": "🧺",
+  "bulk-item-pickup": "📦",
   "rental-property-cleanout": "🏠",
   "tenant-trash-out": "🗑️",
   "renovation-debris-removal": "🔨",
@@ -14,6 +18,20 @@ const NICHE_ICON: Record<string, string> = {
   "overgrown-property-cleanup": "🌿",
   "playset-outdoor-structure-removal": "🛝",
 };
+
+// The high-intent Grovetown pickup searches we want to capture, each pointed at the
+// most specific published page (the Grovetown demand pages, plus the carpet hub, which
+// has no Grovetown page of its own yet). Curated order, not registry-driven.
+const POPULAR_GROVETOWN_PICKUPS: { icon: string; label: string; href: string }[] = [
+  { icon: "🛏️", label: "Mattress & box spring pickup", href: "/mattress-removal-grovetown-ga" },
+  { icon: "🛋️", label: "Couch, sofa & furniture pickup", href: "/furniture-removal-grovetown-ga" },
+  { icon: "🧺", label: "Washer & dryer removal", href: "/appliance-removal-grovetown-ga" },
+  { icon: "🔌", label: "Large appliance pickup", href: "/appliance-removal-grovetown-ga" },
+  { icon: "📦", label: "Bulk item pickup", href: "/bulk-item-pickup-grovetown-ga" },
+  { icon: "🏠", label: "Rental cleanouts", href: "/rental-property-cleanout-grovetown-ga" },
+  { icon: "🗑️", label: "Tenant trash-outs", href: "/tenant-trash-out-grovetown-ga" },
+  { icon: "🧵", label: "Carpet & padding removal", href: "/carpet-removal" },
+];
 
 // Home market: Grovetown leads the service-area list; everything else keeps its order.
 const HOME_CITY_SLUG = "grovetown-ga";
@@ -63,6 +81,41 @@ export default function Home() {
           >
             Call {BUSINESS_PHONE}
           </a>
+        </div>
+      </section>
+
+      {/* Popular Grovetown pickups — high-intent demand capture */}
+      <section className="bg-white py-16 px-6 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+            Popular Grovetown Pickups
+          </h2>
+          <p className="text-gray-500 text-center max-w-xl mx-auto mb-10">
+            Pickups we handle across Grovetown and the Fort Eisenhower area — from
+            PCS move-outs and rental turnovers to clearing out a single heavy item.
+            Pick what fits and request a quote from photos.
+          </p>
+          <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {POPULAR_GROVETOWN_PICKUPS.map(({ icon, label, href }) => (
+              <li key={label}>
+                <Link
+                  href={href}
+                  className="flex h-full items-center gap-3 bg-gray-50 rounded-xl border border-gray-100 p-4 text-gray-900 hover:border-green-300 hover:bg-white hover:shadow-sm transition-all"
+                >
+                  <span className="text-2xl" aria-hidden="true">{icon}</span>
+                  <span className="text-sm font-medium">{label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-10 text-center">
+            <Link
+              href="/leads/new"
+              className="inline-block bg-green-600 text-white font-semibold px-8 py-3 rounded-full hover:bg-green-700 transition-colors"
+            >
+              Request a Pickup Quote
+            </Link>
+          </div>
         </div>
       </section>
 
