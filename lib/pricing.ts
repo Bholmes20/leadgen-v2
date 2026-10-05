@@ -30,7 +30,7 @@ export const PRICING_BANDS: readonly PriceBand[] = [
   { id: "mattress-boxspring-curbside", label: "Mattress + box spring — curbside", low: 100, high: 140 },
   { id: "couch-curbside", label: "Couch — curbside", low: 90, high: 140 },
   { id: "sectional-curbside", label: "Sectional — curbside", low: 150, high: 250 },
-  { id: "washer-dryer-single", label: "Washer or dryer — curbside/garage", low: 90, high: 150 },
+  { id: "appliance-removal", label: "Appliance removal — curbside/garage", low: 90, high: 150 },
   { id: "washer-dryer-set", label: "Washer + dryer set", low: 175, high: 250 },
   { id: "appliance-inside", label: "Appliance — inside / laundry room", low: 150, high: 250, openEnded: true },
   { id: "bulk-1-3-curbside", label: "1–3 bulk items — curbside", low: 100, high: 225 },
@@ -88,7 +88,7 @@ export type BandMatch = {
 function matchBands(itemType: string, niche: string): BandMatch {
   if (niche === "appliance-removal") {
     return {
-      recommended: band("washer-dryer-single"),
+      recommended: band("appliance-removal"),
       alternates: [band("washer-dryer-set"), band("appliance-inside")],
     };
   }
@@ -188,6 +188,12 @@ export function suggestPricing(input: PricingLeadInput): PricingSuggestion {
   } else if (alternates.length > 0) {
     notes.push(
       `Defaulted to ${recommended.label} — check "Other possible matches" if the job is bigger or smaller.`,
+    );
+  }
+
+  if (input.niche === "appliance-removal") {
+    notes.push(
+      "Fridges, freezers, and AC units carry refrigerant — flag those and quote manually; handling can change the price.",
     );
   }
 

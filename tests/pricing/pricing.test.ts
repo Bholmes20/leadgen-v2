@@ -38,14 +38,21 @@ test("ambiguous item types recommend one default band, with the rest as alternat
   }
 });
 
-test("appliance requests (bulk item + appliance-removal niche) recommend the appliance band", () => {
+test("appliance requests (bulk item + appliance-removal niche) recommend the appliance removal band", () => {
   const s = suggestPricing({
     itemType: "bulk-item-pickup",
     niche: "appliance-removal",
     pickupLocation: "garage",
   });
-  assert.equal(s.recommended?.id, "washer-dryer-single");
+  assert.equal(s.recommended?.id, "appliance-removal");
+  // appliance removal 90–150 curbside/garage, no per-item access add at the garage
+  assert.deepEqual(s.range, { low: 90, high: 150, openEnded: false });
   assert.deepEqual(s.alternates.map((b) => b.id), ["washer-dryer-set", "appliance-inside"]);
+  // Refrigerant-bearing units stay a manual/cautious quote.
+  assert.ok(
+    s.notes.some((n) => /refrigerant/i.test(n) && /manual/i.test(n)),
+    "flags fridge/freezer/AC refrigerant handling as a manual quote",
+  );
 });
 
 test("mattress curbside → box-spring default, mattress-only as an alternate", () => {
