@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getNicheHubs, getCityHubs } from "@/lib/seo";
 import { SERVICE_DISCLOSURE } from "@/lib/site";
 
-const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "706-828-1733";
 const BUSINESS_NAME = "Esee Property Services";
 
 // Emoji per niche hub — light visual cue, not keyword text.
@@ -37,7 +36,6 @@ const POPULAR_GROVETOWN_PICKUPS: { icon: string; label: string; href: string }[]
 const HOME_CITY_SLUG = "grovetown-ga";
 
 export default function Home() {
-  const telHref = `tel:${BUSINESS_PHONE.replace(/\D/g, "")}`;
   const niches = getNicheHubs();
   const cities = [...getCityHubs()].sort((a, b) =>
     a.slug === HOME_CITY_SLUG ? -1 : b.slug === HOME_CITY_SLUG ? 1 : 0,
@@ -45,16 +43,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      {/* Phone header */}
+      {/* Quote prompt header */}
       <div className="bg-green-700 text-white text-center py-2 px-4 text-sm font-medium">
-        Call or text for a free quote:{" "}
-        <a
-          href={telHref}
+        <Link
+          href="/leads/new"
           className="font-bold underline hover:text-green-100"
-          aria-label={`Call ${BUSINESS_NAME}`}
         >
-          {BUSINESS_PHONE}
-        </a>{" "}
+          Request a free quote online
+        </Link>{" "}
         · Serving Grovetown, GA &amp; the greater Augusta / CSRA area
       </div>
 
@@ -73,14 +69,14 @@ export default function Home() {
             href="/leads/new"
             className="inline-block bg-green-600 text-white text-lg font-semibold px-8 py-4 rounded-full hover:bg-green-700 transition-colors"
           >
-            Request Pickup
+            Start Pickup Request
           </Link>
-          <a
-            href={telHref}
+          <Link
+            href="/leads/new"
             className="inline-block border-2 border-green-600 text-green-700 text-lg font-semibold px-8 py-4 rounded-full hover:bg-green-50 transition-colors"
           >
-            Call {BUSINESS_PHONE}
-          </a>
+            Get a Quote From Photos
+          </Link>
         </div>
       </section>
 
@@ -203,9 +199,9 @@ export default function Home() {
             <div className="text-center sm:text-left">
               <p className="font-semibold text-gray-600">{BUSINESS_NAME}</p>
               <p>Grovetown, GA &amp; the greater Augusta / CSRA area</p>
-              <a href={telHref} className="hover:text-green-600 transition-colors">
-                {BUSINESS_PHONE}
-              </a>
+              <Link href="/leads/new" className="hover:text-green-600 transition-colors">
+                Request a Pickup Quote
+              </Link>
             </div>
             <div className="text-center sm:text-right">
               <Link href="/junk-removal-augusta-ga" className="hover:text-green-600 transition-colors">

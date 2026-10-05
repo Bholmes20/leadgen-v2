@@ -7,7 +7,7 @@ import {
 } from "@/lib/seo/schema";
 import { SITE_URL, SERVICE_DISCLOSURE } from "@/lib/site";
 import AttributionTracker from "@/components/AttributionTracker";
-import { JsonLd, PhoneBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
+import { JsonLd, PromoBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
 
 export default function NicheHub({ hub }: { hub: NicheHubData }) {
   const { niche, pages } = hub;
@@ -44,7 +44,7 @@ export default function NicheHub({ hub }: { hub: NicheHubData }) {
         ])}
       />
 
-      <PhoneBar />
+      <PromoBar />
       <Breadcrumb items={[{ name: "Home", href: "/" }, { name: niche.label }]} />
 
       {/* Hero */}

@@ -1,7 +1,7 @@
 import type { Faq, ResolvedPage } from "./types";
 import type { NicheHub } from "./pages";
 import { CITIES } from "./cities";
-import { SITE_URL, BUSINESS_NAME, BUSINESS_PHONE } from "../site";
+import { SITE_URL, BUSINESS_NAME } from "../site";
 
 // JSON-LD builders for the SEO factory.
 //
@@ -33,10 +33,12 @@ export function buildOrganizationSchema() {
     description:
       "A property services company serving the Augusta, GA / CSRA area — rental cleanouts, junk and debris removal, carpet removal, overgrown-lot cleanup, and related property services. We manage each job from quote to completion; the work is done by ESEE directly or by an approved local service partner.",
     areaServed: AREA_SERVED,
+    // Public contact routes through the online quote request — we intentionally do not
+    // expose a phone number in structured data. `url` points to the request form.
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: BUSINESS_PHONE,
       contactType: "customer service",
+      url: `${SITE_URL}/leads/new`,
       areaServed: ["US-GA", "US-SC"],
     },
   };

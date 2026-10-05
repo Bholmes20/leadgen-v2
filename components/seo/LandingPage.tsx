@@ -9,7 +9,7 @@ import {
 } from "@/lib/seo/schema";
 import { SITE_URL, SERVICE_DISCLOSURE } from "@/lib/site";
 import AttributionTracker from "@/components/AttributionTracker";
-import { JsonLd, PhoneBar, Breadcrumb, LeadCtaBand, SiteFooter, telHref } from "./chrome";
+import { JsonLd, PromoBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
 
 export default function LandingPage({ page }: { page: ResolvedPage }) {
   const { niche, city, content, pricing, faqs } = page;
@@ -58,7 +58,7 @@ export default function LandingPage({ page }: { page: ResolvedPage }) {
         ])}
       />
 
-      <PhoneBar area={`${cityLabel} & surrounding areas`} />
+      <PromoBar area={`${cityLabel} & surrounding areas`} />
       <Breadcrumb
         items={[
           { name: "Home", href: "/" },
@@ -80,14 +80,14 @@ export default function LandingPage({ page }: { page: ResolvedPage }) {
               href="/leads/new"
               className="inline-block bg-green-600 text-white text-base font-semibold px-8 py-3 rounded-full hover:bg-green-700 transition-colors text-center"
             >
-              Request a Free Quote
+              Request a Pickup Quote
             </Link>
-            <a
-              href={telHref}
+            <Link
+              href="/leads/new"
               className="inline-block border-2 border-green-600 text-green-700 text-base font-semibold px-8 py-3 rounded-full hover:bg-green-50 transition-colors text-center"
             >
-              Call for a Quote
-            </a>
+              Get a Quote From Photos
+            </Link>
           </div>
         </div>
       </section>
