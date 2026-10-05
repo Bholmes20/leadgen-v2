@@ -6,6 +6,8 @@ import db from '@/lib/db'
 import { matchContractors } from '@/lib/matching'
 import { assignContractor, updateAssignment, saveNotes, saveQuote, sendQuote } from '../actions'
 import { itemTypeLabel, pickupLocationLabel, QUOTE_STATUSES } from '@/lib/pickup'
+import { suggestPricing } from '@/lib/pricing'
+import SuggestedPricing from './SuggestedPricing'
 
 type Lead = {
   id: string
@@ -141,6 +143,15 @@ export default async function LeadDetailPage({
   const photos: string[] = (() => {
     try { return JSON.parse(lead.photos || '[]') } catch { return [] }
   })()
+
+  // Internal quoting guidance (admin-only) derived from the pickup request fields.
+  const pricing = suggestPricing({
+    itemType: lead.item_type,
+    pickupLocation: lead.pickup_location,
+    heavyItems: Boolean(lead.heavy_items),
+    details: lead.details,
+    niche: lead.niche,
+  })
 
   const matches = matchContractors(lead.service, lead.zip)
 
@@ -335,6 +346,9 @@ export default async function LeadDetailPage({
           </dl>
         </div>
 
+        {/* Suggested Pricing (internal, admin-only) */}
+        <SuggestedPricing suggestion={pricing} />
+
         {/* Quote */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
@@ -353,6 +367,7 @@ export default async function LeadDetailPage({
               <label className="block">
                 <span className="text-xs text-gray-500">Quote amount ($)</span>
                 <input
+                  id="quote_amount_input"
                   name="quote_amount"
                   type="number" min="0" step="0.01"
                   defaultValue={lead.quote_amount != null ? (lead.quote_amount / 100).toFixed(2) : ''}
@@ -374,6 +389,7 @@ export default async function LeadDetailPage({
             <label className="block">
               <span className="text-xs text-gray-500">Included work / notes</span>
               <textarea
+                id="quote_notes_input"
                 name="quote_notes" rows={2}
                 defaultValue={lead.quote_notes ?? ''}
                 className="mt-0.5 block w-full text-sm rounded border border-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-400 resize-none"
