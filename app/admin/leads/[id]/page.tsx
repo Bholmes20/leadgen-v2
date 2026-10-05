@@ -150,6 +150,7 @@ export default async function LeadDetailPage({
     pickupLocation: lead.pickup_location,
     heavyItems: Boolean(lead.heavy_items),
     details: lead.details,
+    niche: lead.niche,
   })
 
   const matches = matchContractors(lead.service, lead.zip)

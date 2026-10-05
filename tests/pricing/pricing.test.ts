@@ -21,31 +21,60 @@ const ROOT = process.cwd();
 
 // ── Matching / math ──────────────────────────────────────────────────────────
 
-test("mattress curbside → two candidate bands, low-band range, no adjustments", () => {
+test("ambiguous item types recommend one default band, with the rest as alternates", () => {
+  // Each ambiguous type → the specified default band first; everything else collapsed.
+  const cases: Record<string, { recommended: string; alternates: string[] }> = {
+    "furniture-pickup": { recommended: "couch-curbside", alternates: ["sectional-curbside"] },
+    "bulk-item-pickup": { recommended: "bulk-1-3-curbside", alternates: ["small-load"] },
+    "junk-removal": { recommended: "small-load", alternates: ["half-load", "full-load"] },
+    "rental-cleanout": { recommended: "rental-cleanout", alternates: [] },
+    "tenant-trash-out": { recommended: "tenant-trash-out", alternates: [] },
+    "mattress-pickup": { recommended: "mattress-boxspring-curbside", alternates: ["mattress-curbside"] },
+  };
+  for (const [itemType, want] of Object.entries(cases)) {
+    const s = suggestPricing({ itemType, pickupLocation: "curbside" });
+    assert.equal(s.recommended?.id, want.recommended, `${itemType} default band`);
+    assert.deepEqual(s.alternates.map((b) => b.id), want.alternates, `${itemType} alternates`);
+  }
+});
+
+test("appliance requests (bulk item + appliance-removal niche) recommend the appliance band", () => {
+  const s = suggestPricing({
+    itemType: "bulk-item-pickup",
+    niche: "appliance-removal",
+    pickupLocation: "garage",
+  });
+  assert.equal(s.recommended?.id, "washer-dryer-single");
+  assert.deepEqual(s.alternates.map((b) => b.id), ["washer-dryer-set", "appliance-inside"]);
+});
+
+test("mattress curbside → box-spring default, mattress-only as an alternate", () => {
   const s = suggestPricing({ itemType: "mattress-pickup", pickupLocation: "curbside" });
-  assert.deepEqual(s.bands.map((b) => b.id), ["mattress-curbside", "mattress-boxspring-curbside"]);
-  assert.deepEqual(s.range, { low: 75, high: 110, openEnded: false });
+  assert.equal(s.recommended?.id, "mattress-boxspring-curbside");
+  assert.deepEqual(s.range, { low: 100, high: 140, openEnded: false });
+  assert.deepEqual(s.alternates.map((b) => b.id), ["mattress-curbside"]);
   assert.equal(s.adjustments.length, 0);
-  assert.equal(s.simple, false, "two candidate bands is not a clean single match");
+  assert.equal(s.simple, false, "a default with alternates is not a clean single match");
   assert.ok(s.notes.some((n) => /low end/i.test(n)), "curbside rationale prefers the low end");
 });
 
 test("inside-first-floor adds the inside adjustment to the range", () => {
   const s = suggestPricing({ itemType: "mattress-pickup", pickupLocation: "inside-first-floor" });
   assert.deepEqual(s.adjustments.map((a) => a.id), ["inside"]);
-  // base mattress 75–110  + inside 25–75  →  100–185
-  assert.deepEqual(s.range, { low: 100, high: 185, openEnded: false });
+  // default mattress+box spring 100–140  + inside 25–75  →  125–215
+  assert.deepEqual(s.range, { low: 125, high: 215, openEnded: false });
 });
 
-test("junk-removal upstairs + heavy → load bands with stacked adjustments", () => {
+test("junk-removal upstairs + heavy → small-load default with stacked adjustments", () => {
   const s = suggestPricing({
     itemType: "junk-removal",
     pickupLocation: "upstairs",
     heavyItems: true,
   });
-  assert.deepEqual(s.bands.map((b) => b.id), ["small-load", "half-load", "full-load"]);
+  assert.equal(s.recommended?.id, "small-load");
+  assert.deepEqual(s.alternates.map((b) => b.id), ["half-load", "full-load"]);
   assert.deepEqual(s.adjustments.map((a) => a.id), ["upstairs", "heavy"]);
-  // primary small-load 150–300  + upstairs 50–150  + heavy 50–200  →  250–650
+  // default small-load 150–300  + upstairs 50–150  + heavy 50–200  →  250–650
   assert.deepEqual(s.range, { low: 250, high: 650, openEnded: false });
   assert.ok(s.notes.some((n) => /bundle/i.test(n)), "warns to bundle multiple factors manually");
 });
@@ -70,19 +99,22 @@ test("clean details do not trigger a soiled adjustment", () => {
 
 test("rental cleanout is a single open-ended band and not a clean copy match", () => {
   const s = suggestPricing({ itemType: "rental-cleanout", pickupLocation: "whole-unit" });
-  assert.deepEqual(s.bands.map((b) => b.id), ["rental-cleanout"]);
+  assert.equal(s.recommended?.id, "rental-cleanout");
+  assert.deepEqual(s.alternates, []);
   assert.deepEqual(s.range, { low: 350, high: 1500, openEnded: true });
   assert.equal(s.simple, false, "open-ended scope job must be scoped, not one-click copied");
 });
 
 test("carpet removal and unknown types yield no band and a manual-quote note", () => {
   const carpet = suggestPricing({ itemType: "carpet-removal", pickupLocation: "curbside" });
-  assert.deepEqual(carpet.bands, []);
+  assert.equal(carpet.recommended, null);
+  assert.deepEqual(carpet.alternates, []);
   assert.equal(carpet.range, null);
   assert.ok(carpet.notes.some((n) => /carpet/i.test(n) && /manual|band/i.test(n)));
 
   const other = suggestPricing({ itemType: "other", pickupLocation: "garage" });
-  assert.deepEqual(other.bands, []);
+  assert.equal(other.recommended, null);
+  assert.deepEqual(other.alternates, []);
   assert.equal(other.range, null);
   assert.ok(other.notes.some((n) => /manual/i.test(n)));
 });
@@ -105,7 +137,9 @@ test("every matched band id and adjustment id exists in the published tables", (
     "tenant-trash-out",
   ]) {
     const s = suggestPricing({ itemType, pickupLocation: "upstairs", heavyItems: true });
-    for (const b of s.bands) assert.ok(bandIds.has(b.id), `band ${b.id} is published`);
+    for (const b of [s.recommended, ...s.alternates]) {
+      if (b) assert.ok(bandIds.has(b.id), `band ${b.id} is published`);
+    }
     for (const a of s.adjustments) assert.ok(adjIds.has(a.id), `adjustment ${a.id} is published`);
   }
 });
@@ -182,6 +216,7 @@ test("the pricing panel copies a suggestion into the editable quote field", () =
   );
   assert.ok(/quote_amount_input/.test(panel), "panel writes into the quote amount input");
   assert.ok(/→ quote/.test(panel), "panel exposes a copy-to-quote action");
+  assert.ok(/Other possible matches/.test(panel), "panel collapses alternates under 'Other possible matches'");
 });
 
 test("a realistic lead produces a renderable suggestion object", () => {
@@ -193,6 +228,7 @@ test("a realistic lead produces a renderable suggestion object", () => {
     details: "A few boxes and an old dresser",
   });
   assert.ok(s.range && typeof s.range.low === "number" && typeof s.range.high === "number");
-  assert.ok(Array.isArray(s.bands) && s.bands.length >= 1);
+  assert.ok(s.recommended, "has a recommended default band to show first");
+  assert.ok(Array.isArray(s.alternates));
   assert.ok(Array.isArray(s.notes));
 });

@@ -72,27 +72,42 @@ function band(id: string): PriceBand {
   return b;
 }
 
-// Which base band(s) an item_type suggests. Several item types are genuinely ambiguous
-// without Brandon's eyes on the photos (a "furniture pickup" could be a single couch or
-// a sectional; "junk removal" could be a small load or a full truck) — so we return the
-// plausible candidates, cheapest first, rather than pretending we know the one answer.
-function matchBands(itemType: string): PriceBand[] {
+export type BandMatch = {
+  // The band to show first — the sensible default for this item type.
+  recommended: PriceBand | null;
+  // Other plausible bands, shown collapsed as "Other possible matches". Several item
+  // types are genuinely ambiguous without Brandon's eyes on the photos (a "furniture
+  // pickup" could be a single couch or a sectional; "junk removal" could be a small load
+  // or a full truck), so we pick a default and keep the rest one click away.
+  alternates: PriceBand[];
+};
+
+// Which base band an item_type (and, for appliances, the niche) suggests. Appliance
+// requests come through the form as a bulk-item pickup but carry the appliance-removal
+// niche from attribution, so we check the niche first and recommend the appliance band.
+function matchBands(itemType: string, niche: string): BandMatch {
+  if (niche === "appliance-removal") {
+    return {
+      recommended: band("washer-dryer-single"),
+      alternates: [band("washer-dryer-set"), band("appliance-inside")],
+    };
+  }
   switch (itemType) {
     case "mattress-pickup":
-      return [band("mattress-curbside"), band("mattress-boxspring-curbside")];
+      return { recommended: band("mattress-boxspring-curbside"), alternates: [band("mattress-curbside")] };
     case "furniture-pickup":
-      return [band("couch-curbside"), band("sectional-curbside")];
+      return { recommended: band("couch-curbside"), alternates: [band("sectional-curbside")] };
     case "bulk-item-pickup":
-      return [band("bulk-1-3-curbside"), band("small-load")];
+      return { recommended: band("bulk-1-3-curbside"), alternates: [band("small-load")] };
     case "junk-removal":
-      return [band("small-load"), band("half-load"), band("full-load")];
+      return { recommended: band("small-load"), alternates: [band("half-load"), band("full-load")] };
     case "rental-cleanout":
-      return [band("rental-cleanout")];
+      return { recommended: band("rental-cleanout"), alternates: [] };
     case "tenant-trash-out":
-      return [band("tenant-trash-out")];
+      return { recommended: band("tenant-trash-out"), alternates: [] };
     // carpet-removal and "other" have no standard band — quote manually.
     default:
-      return [];
+      return { recommended: null, alternates: [] };
   }
 }
 
@@ -105,6 +120,9 @@ export type PricingLeadInput = {
   pickupLocation?: string | null;
   heavyItems?: boolean | null;
   details?: string | null;
+  // Attribution niche — lets appliance requests (which route through bulk-item pickup)
+  // recommend the appliance band.
+  niche?: string | null;
 };
 
 function matchAdjustments(input: PricingLeadInput): AccessAdjustment[] {
@@ -133,42 +151,43 @@ function matchAdjustments(input: PricingLeadInput): AccessAdjustment[] {
 }
 
 export type PricingSuggestion = {
-  // Candidate base bands (cheapest first). Empty when the item type has no standard band.
-  bands: PriceBand[];
+  // The recommended default band to show first. null when the item type has no standard band.
+  recommended: PriceBand | null;
+  // Other plausible bands, shown collapsed as "Other possible matches".
+  alternates: PriceBand[];
   // Access adjustments implied by the lead's access/condition fields.
   adjustments: AccessAdjustment[];
-  // The primary (cheapest) band with adjustments applied — a concrete starting range.
-  // null when there is no matched band.
+  // The recommended band with adjustments applied — a concrete starting range.
+  // null when there is no recommended band.
   range: { low: number; high: number; openEnded: boolean } | null;
   // Human-readable rationale lines ("why this band / these adds").
   notes: string[];
-  // True when there's exactly one matched band and it isn't an open-ended scope job —
-  // i.e. a clean range Brandon can copy straight into the quote field.
+  // True when there's a recommended band with no alternates and it isn't an open-ended
+  // scope job — i.e. a clean range Brandon can copy straight into the quote field.
   simple: boolean;
 };
 
 export function suggestPricing(input: PricingLeadInput): PricingSuggestion {
-  const bands = matchBands(input.itemType ?? "");
+  const { recommended, alternates } = matchBands(input.itemType ?? "", input.niche ?? "");
   const adjustments = matchAdjustments(input);
   const notes: string[] = [];
 
-  const primary = bands[0] ?? null;
   const addLow = adjustments.reduce((s, a) => s + a.low, 0);
   const addHigh = adjustments.reduce((s, a) => s + a.high, 0);
-  const range = primary
-    ? { low: primary.low + addLow, high: primary.high + addHigh, openEnded: !!primary.openEnded }
+  const range = recommended
+    ? { low: recommended.low + addLow, high: recommended.high + addHigh, openEnded: !!recommended.openEnded }
     : null;
 
   // Rationale.
-  if (!primary) {
+  if (!recommended) {
     notes.push(
       input.itemType === "carpet-removal"
         ? "Carpet / padding removal has no standard band — quote from rooms, condition, and carry; use a load band as a sanity check."
         : "No standard band for this request — pick the closest load band below and quote manually.",
     );
-  } else if (bands.length > 1) {
+  } else if (alternates.length > 0) {
     notes.push(
-      `More than one band could fit — start at ${PRICING_BANDS.indexOf(primary) >= 0 ? primary.label : "the lowest"} and size up from the photos.`,
+      `Defaulted to ${recommended.label} — check "Other possible matches" if the job is bigger or smaller.`,
     );
   }
 
@@ -200,13 +219,13 @@ export function suggestPricing(input: PricingLeadInput): PricingSuggestion {
   if (input.details && SOILED_RE.test(input.details)) {
     notes.push("Details mention a soiled/damaged item — add the dirty/soiled adjustment.");
   }
-  if (adjustments.length > 1 || (bands.length > 1 && adjustments.length >= 1)) {
+  if (adjustments.length > 1 || (alternates.length > 0 && adjustments.length >= 1)) {
     notes.push("Multiple factors — bundle the adjustments manually rather than stacking blindly.");
   }
 
-  const simple = bands.length === 1 && !primary?.openEnded;
+  const simple = recommended !== null && alternates.length === 0 && !recommended.openEnded;
 
-  return { bands, adjustments, range, notes, simple };
+  return { recommended, alternates, adjustments, range, notes, simple };
 }
 
 // Display helpers (used by the admin panel).

@@ -34,7 +34,7 @@ function appendQuoteNote(text: string) {
 }
 
 export default function SuggestedPricing({ suggestion }: { suggestion: PricingSuggestion }) {
-  const { bands, adjustments, range, notes, simple } = suggestion;
+  const { recommended, alternates, adjustments, range, notes, simple } = suggestion;
   const [copied, setCopied] = useState<string | null>(null);
 
   function flash(label: string) {
@@ -48,9 +48,8 @@ export default function SuggestedPricing({ suggestion }: { suggestion: PricingSu
   }
 
   function copySummaryToNotes() {
-    const primary = bands[0];
-    if (!primary) return;
-    const parts = [`Internal guide: ${primary.label} ${formatBand(primary)}`];
+    if (!recommended) return;
+    const parts = [`Internal guide: ${recommended.label} ${formatBand(recommended)}`];
     if (adjustments.length) {
       parts.push(`access: ${adjustments.map((a) => `${a.label} ${formatAdjustment(a)}`).join(", ")}`);
     }
@@ -83,6 +82,12 @@ export default function SuggestedPricing({ suggestion }: { suggestion: PricingSu
               </span>
             )}
           </div>
+          {recommended && (
+            <p className="mt-1 text-xs text-gray-500">
+              Based on <span className="font-medium text-gray-700">{recommended.label}</span>{" "}
+              ({formatBand(recommended)} curbside base)
+            </p>
+          )}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -123,24 +128,22 @@ export default function SuggestedPricing({ suggestion }: { suggestion: PricingSu
         </p>
       )}
 
-      {/* Candidate base bands */}
-      {bands.length > 0 && (
-        <div className="mt-4">
-          <p className="text-xs font-medium text-gray-500 mb-2">
-            {bands.length > 1 ? "Candidate bands (curbside base — size up from photos)" : "Matched band (curbside base)"}
+      {/* Other possible matches — alternate bands, collapsed by default */}
+      {alternates.length > 0 && (
+        <details className="mt-4 group">
+          <summary className="text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700 select-none">
+            Other possible matches ({alternates.length})
+          </summary>
+          <p className="mt-1 text-[11px] text-gray-400">
+            Use one of these instead if the recommended band doesn&apos;t fit the photos.
           </p>
-          <ul className="space-y-1.5">
-            {bands.map((b, i) => (
+          <ul className="mt-2 space-y-1.5">
+            {alternates.map((b) => (
               <li
                 key={b.id}
                 className="flex flex-wrap items-center justify-between gap-2 text-sm rounded-lg border border-gray-100 px-3 py-2"
               >
-                <span className="text-gray-800">
-                  {b.label}
-                  {i === 0 && bands.length > 1 && (
-                    <span className="ml-2 text-[10px] font-semibold text-gray-500 uppercase">Most likely</span>
-                  )}
-                </span>
+                <span className="text-gray-800">{b.label}</span>
                 <span className="flex items-center gap-2">
                   <span className="font-semibold tabular-nums text-gray-900">{formatBand(b)}</span>
                   <button
@@ -161,7 +164,7 @@ export default function SuggestedPricing({ suggestion }: { suggestion: PricingSu
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
 
       {/* Access adjustments to consider */}
