@@ -288,7 +288,7 @@ export const QUOTE_PROMPTS = [
   "Upload a few photos for a faster, more accurate quote.",
   "We confirm scope and price before any work begins.",
   "Serving Augusta and the CSRA.",
-  "Questions? Call or text us.",
+  "Questions? Submit details and we'll follow up.",
 ];
 
 // Neutral assurances occasionally appended to an ad. Describe the service and area

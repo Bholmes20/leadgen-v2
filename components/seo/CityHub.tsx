@@ -3,7 +3,7 @@ import type { CityHub as CityHubData } from "@/lib/seo";
 import { buildBreadcrumbSchema } from "@/lib/seo/schema";
 import { SITE_URL, SERVICE_DISCLOSURE } from "@/lib/site";
 import AttributionTracker from "@/components/AttributionTracker";
-import { JsonLd, PhoneBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
+import { JsonLd, PromoBar, Breadcrumb, LeadCtaBand, SiteFooter } from "./chrome";
 
 export default function CityHub({ hub }: { hub: CityHubData }) {
   const { city, pages } = hub;
@@ -21,7 +21,7 @@ export default function CityHub({ hub }: { hub: CityHubData }) {
         ])}
       />
 
-      <PhoneBar area={`${cityLabel} & the CSRA`} />
+      <PromoBar area={`${cityLabel} & the CSRA`} />
       <Breadcrumb items={[{ name: "Home", href: "/" }, { name: cityLabel }]} />
 
       {/* Hero */}

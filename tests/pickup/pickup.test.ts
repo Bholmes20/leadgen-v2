@@ -149,8 +149,11 @@ test("the homepage leads with Grovetown pickup positioning", () => {
     /Grovetown Pickup, Cleanouts &amp; Junk Removal/.test(home),
     "homepage H1 should lead with Grovetown pickup/cleanouts/junk removal",
   );
-  // Primary CTA requests a pickup.
-  assert.ok(/Request Pickup/.test(home), "homepage primary CTA should be 'Request Pickup'");
+  // Primary CTA requests a pickup (form-first, no call CTA).
+  assert.ok(
+    /Start Pickup Request/.test(home),
+    "homepage primary CTA should be 'Start Pickup Request'",
+  );
   // Leans into the Fort Eisenhower-area / PCS mover niche.
   assert.ok(/fort eisenhower/i.test(home), "homepage should mention the Fort Eisenhower area");
   // Grovetown is named before Augusta anywhere Augusta appears (secondary, not the headline).

@@ -4,7 +4,11 @@
 
 export const SITE_URL = "https://leads.eseeent.com";
 export const BUSINESS_NAME = "Esee Property Services";
-export const BUSINESS_PHONE = process.env.BUSINESS_PHONE ?? "706-828-1733";
+
+// Note: we intentionally no longer expose a public business phone number on the
+// website. Customers are driven to the online pickup request form (/leads/new); the
+// business follows up by phone/text/email from the submitted lead. Internal/outbound
+// messaging (lib/email.ts, lib/followup.ts) keeps its own BUSINESS_PHONE constant.
 
 // Standard disclosure. ESEE is the customer-facing property services company and
 // manages every job end to end; the work itself is performed by ESEE directly or by

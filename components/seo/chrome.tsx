@@ -1,10 +1,7 @@
 import Link from "next/link";
-import { BUSINESS_PHONE } from "@/lib/site";
 
 // Shared presentational chrome for the SEO factory (landing pages + hubs). Server
 // components — no client JS. Keeps the pages consistent and DRY without a redesign.
-
-export const telHref = `tel:${BUSINESS_PHONE.replace(/\D/g, "")}`;
 
 export function JsonLd({ data }: { data: object }) {
   return (
@@ -17,13 +14,12 @@ export function JsonLd({ data }: { data: object }) {
   );
 }
 
-export function PhoneBar({ area }: { area?: string }) {
+export function PromoBar({ area }: { area?: string }) {
   return (
     <div className="bg-green-700 text-white text-center py-2 px-4 text-sm font-medium">
-      Call or text for a free quote:{" "}
-      <a href={telHref} className="font-bold underline hover:text-green-100">
-        {BUSINESS_PHONE}
-      </a>
+      <Link href="/leads/new" className="font-bold underline hover:text-green-100">
+        Request a free quote online
+      </Link>
       {` · Serving ${area ?? "Augusta, GA & surrounding areas"}`}
     </div>
   );
@@ -67,14 +63,14 @@ export function LeadCtaBand({ heading, sub }: { heading: string; sub: string }) 
           href="/leads/new"
           className="inline-block bg-white text-green-700 font-semibold px-8 py-3 rounded-full hover:bg-green-50 transition-colors"
         >
-          Request a Free Quote
+          Request a Pickup Quote
         </Link>
-        <a
-          href={telHref}
+        <Link
+          href="/leads/new"
           className="inline-block border-2 border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-green-700 transition-colors"
         >
-          Call {BUSINESS_PHONE}
-        </a>
+          Get a Quote From Photos
+        </Link>
       </div>
     </section>
   );

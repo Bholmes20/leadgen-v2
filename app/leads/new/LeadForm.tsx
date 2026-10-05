@@ -116,7 +116,7 @@ export default function LeadForm() {
       }
       setSubmitted(true);
     } catch (err) {
-      setError("Something went wrong. Please try again or call us directly.");
+      setError("Something went wrong. Please try again — submit your details and we'll follow up.");
       console.error(err);
     } finally {
       setSubmitting(false);
