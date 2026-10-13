@@ -7,11 +7,8 @@ import { SITE_URL } from "@/lib/site";
 // never appear and future approved pages enter the sitemap automatically. Admin/API
 // routes are excluded (they are not registry entries and are blocked in robots.ts).
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
   const staticEntries: MetadataRoute.Sitemap = [
-    { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${SITE_URL}/leads/new`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
     // Existing legitimate legacy page — kept live.
     { url: `${SITE_URL}/junk-removal-augusta-ga`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
   ];
