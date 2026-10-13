@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description:
     "Pickup and cleanout quotes for Grovetown and the Fort Eisenhower area. PCS move-outs, rental cleanouts, and curbside pickup of furniture, mattresses, boxes, and bulk items. Upload a few photos and we'll get back to you with a free quote. No obligation.",
   alternates: { canonical: "/leads/new" },
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Request a Free Quote | Esee Property Services",
     description:
